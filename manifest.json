@@ -3,7 +3,7 @@
   "short_name": "EngTools",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#0f172a", 
+  "background_color": "#FFF5F7", 
   "theme_color": "#0f172a",
   "icons": [
     {
@@ -20,3 +20,4 @@
     }
   ]
 }
+
