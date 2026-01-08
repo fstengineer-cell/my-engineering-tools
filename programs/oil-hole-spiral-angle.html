@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="th"> <head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Oil hole Spiral Angle Calculator Pro</title>
+  <style>
+    /* 1. VISUAL CORE */
+    :root {
+      --bg: #f0f2f5;
+      --card-bg: rgba(255, 255, 255, 0.85);
+      --text: #0b0c0e;
+      --muted: #6b7280;
+      --tint: #007aff;
+      --border: rgba(0, 0, 0, 0.1);
+      --danger: #ff3b30;
+      --success: #34c759;
+      --warning: #ffcc00;
+      --radius: 18px;
+      --shadow: 0 8px 32px rgba(0,0,0,.08);
+    }
+    
+    html, body { height: 100%; }
+    
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top, #fdfdff, #eff1f5);
+    }
+    
+    .container {
+      max-width: 980px; 
+      margin: 24px auto; 
+      padding: 0 16px 40px;
+      display: grid; 
+      grid-template-columns: 1.15fr .85fr; 
+      gap: 20px;
+    }
+    @media (max-width: 900px){ 
+      .container { grid-template-columns: 1fr; } 
+    }
+
+    .card { 
+      background: var(--card-bg);
+      border-radius: var(--radius); 
+      box-shadow: var(--shadow); 
+      border: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      overflow: hidden;
+    }
+    
+    .header {
+      padding: 18px 20px 12px; 
+      border-bottom: 1px solid var(--border);
+      display:flex; 
+      align-items:center; 
+      justify-content:space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    
+    h1 { font-size: 18px; margin: 0; font-weight: 700; }
+    .content { padding: 20px; }
+
+    /* LAYOUT UTILS */
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row3 { display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .field { display:flex; flex-direction:column; gap: 6px; position: relative; }
+    .field label { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    /* INPUTS */
+    .input {
+      appearance: none; 
+      width: 100%; 
+      box-sizing: border-box;
+      border: 1px solid var(--border); 
+      border-radius: 10px; 
+      padding: 10px 12px;
+      font-size: 15px; 
+      background: rgba(255,255,255,0.8); 
+      outline: none; 
+      transition: all .2s;
+    }
+    .input:focus { 
+      border-color: var(--tint); 
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(0,122,255,.15); 
+    }
+    .input.error {
+      border-color: var(--danger);
+      background: #fff5f5;
+    }
+    .error-msg {
+      color: var(--danger); font-size: 11px; position: absolute; bottom: -18px; left: 2px;
+      display: none;
+    }
+    .input.error + .error-msg { display: block; }
+
+    /* SEGMENTED CONTROL */
+    .segmented {
+      display:inline-flex; 
+      border:1px solid var(--border); 
+      border-radius: 10px; 
+      overflow:hidden; 
+      background: #eef0f4;
+      width: 100%;
+    }
+    .segmented input { display:none; }
+    .segmented label { 
+      flex: 1; text-align: center;
+      padding: 9px 4px; 
+      font-size: 13px; 
+      font-weight: 500; 
+      cursor: pointer; 
+      color: #555; 
+      transition: all 0.2s;
+    }
+    .segmented input:checked + label { 
+      background: #fff; 
+      color: var(--tint); 
+      font-weight: 700; 
+      box-shadow: 0 2px 6px rgba(0,0,0,.05);
+    }
+
+    /* BUTTONS */
+    .btn-group { display: flex; gap: 10px; }
+    .button { 
+      appearance:none; border:0; background: var(--tint); color:#fff; 
+      padding: 12px 16px; border-radius: 10px; font-size:15px; 
+      font-weight: 600; cursor:pointer; 
+      box-shadow: 0 4px 12px rgba(0,122,255,.2);
+      transition: transform 0.1s, box-shadow 0.1s;
+      flex: 1;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .button.secondary {
+      background: #fff; color: var(--text); border: 1px solid var(--border);
+      box-shadow: 0 2px 5px rgba(0,0,0,.05);
+    }
+    .button:active { transform: scale(0.97); }
+
+    /* OUTPUTS */
+    .out { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+    .metric { 
+      background: rgba(240, 242, 245, 0.5); 
+      border: 1px solid var(--border); 
+      border-radius: 12px; 
+      padding: 12px; 
+      text-align: center;
+    }
+    .metric h3 { margin:0 0 4px; font-size: 11px; color: var(--muted); text-transform: uppercase; }
+    .metric .value { 
+      font: 700 22px/1.2 -apple-system, sans-serif; 
+      color: var(--tint); 
+    }
+    .metric small { display:block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+
+    /* HELIX BADGE */
+    .badge-info {
+      display: inline-block;
+      font-size: 11px;
+      color: #007aff;
+      background: rgba(0, 122, 255, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+
+    canvas { 
+      width: 100%; height: auto; 
+      display:block; 
+      background: #fff;
+    }
+    .note { color: var(--muted); font-size: 12px; margin-top: 6px; }
+    
+    .mb-16 { margin-bottom: 16px; }
+    .mb-10 { margin-bottom: 10px; }
+    .align-end { align-items: end; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="card" id="inputs">
+      <div class="header">
+        <h1>Oil hole Spiral Calculator</h1>
+        <button class="button secondary" id="resetBtn" style="padding: 6px 12px; font-size: 12px; width: auto; flex:0;">Reset Defaults</button>
+      </div>
+      <div class="content">
+        
+        <div class="row3 mb-10">
+          <div class="field">
+            <label>Blank Diameter (mm)</label>
+            <input id="rodDia" class="input" type="number" step="0.01" value="20" min="0.1" />
+            <span class="error-msg">Must be > 0</span>
+          </div>
+          <div class="field">
+            <label>Length z (mm)</label>
+            <input id="length" class="input" type="number" step="0.1" value="80" />
+          </div>
+          <div class="field">
+            <label>Lead (mm/rev)</label>
+            <input id="lead" class="input" type="number" step="0.01" value="200.49" />
+            <span class="error-msg">Cannot be 0</span>
+            <div id="helixDisplay" class="badge-info">Helix: —°</div>
+          </div>
+        </div>
+        
+        <div class="row3 mb-10">
+          <div class="field">
+            <label>Oilhole Ø (mm)</label>
+            <input id="holeDia" class="input" type="number" step="0.05" value="2.5" min="0.1" />
+          </div>
+          <div class="field">
+            <label>TK (mm)</label>
+            <input id="cc" class="input" type="number" step="0.01" value="10" />
+          </div>
+          <div class="field">
+            <label>Helix Hand</label>
+            <div class="segmented">
+              <input type="radio" name="hand" value="right" id="right" checked><label for="right">R (ขวา)</label>
+              <input type="radio" name="hand" value="left" id="left"><label for="left">L (ซ้าย)</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-16">
+          <div class="field">
+            <label>Start Angle (z=0, CCW+)</label>
+            <select id="start" class="input">
+              <option value="90" selected>+Y Axis (Top)</option>
+              <option value="0">+X Axis (Right)</option>
+              <option value="180">-X Axis (Left)</option>
+              <option value="270">-Y Axis (Bottom)</option>
+              <option value="custom">Custom...</option>
+            </select>
+          </div>
+          <div class="field" id="customWrap" style="display:none;">
+            <label>Custom Angle (°)</label>
+            <input id="custom" class="input" type="number" step="0.1" value="90" />
+          </div>
+        </div>
+
+        <div class="row align-end mb-10">
+          <div class="field">
+            <label>Cross-section z (mm)</label>
+            <input id="zList" class="input" type="text" value="0, 40, 80" placeholder="e.g. 0, 50, 100" />
+            <div class="note">คั่นด้วยลูกน้ำ (,)</div>
+          </div>
+          <div class="btn-group">
+            <button class="button" id="calc">Calculate</button>
+          </div>
+        </div>
+
+        <div class="out" id="outputs">
+          <div class="metric">
+            <h3>Angle from +X (CCW+)</h3>
+            <div class="value" id="ax">—</div>
+            <small id="axcw">CW: —</small>
+          </div>
+          <div class="metric">
+            <h3>Angle from +Y (CCW+)</h3>
+            <div class="value" id="ay">—</div>
+            <small id="aycw">CW: —</small>
+          </div>
+        </div>
+      </div>
+      
+      <canvas id="view" height="520"></canvas>
+      
+      <div style="padding: 0 20px 20px; text-align: right;">
+        <button class="button secondary" id="downloadBtn" style="display:inline-flex; width:auto;">
+          Save Image
+        </button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="header"><h1>หลักการทำงาน (How this works)</h1></div>
+      <div class="content">
+        <p><strong>ข้อตกลง:</strong> มุมทวนเข็มนาฬิกา (CCW) เป็นค่าบวก (+), มุมตามเข็ม (CW) เป็นค่าลบ (-)</p>
+        <p>
+          <strong>สูตรการคำนวณ:</strong> มุมที่เกลียวหมุนไป (Rotation) ณ ระยะ <em>z</em> คำนวณได้จาก:
+          <br><br>
+          <code style="background:#eee; padding:2px 6px; border-radius:4px;">θ = (360 × z) / Lead</code>
+        </p>
+        <p>
+          <strong>มุมผลลัพธ์:</strong> คือ <em>Start Angle</em> ± <em>θ</em>
+          <br>
+          <span style="font-size:0.9em; color:#666;">(เกลียวขวาใช้ +, เกลียวซ้ายใช้ -)</span>
+        </p>
+        <p class="note">ค่าที่ได้จะถูกปรับให้อยู่ในช่วง 0° ถึง 360° เสมอ</p>
+      </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const $ = (s) => document.querySelector(s);
+      
+      // --- UTILITIES ---
+      const norm360 = (a) => {
+        a = a % 360; 
+        if (a < 0) a += 360; 
+        return a; 
+      };
+      
+      const normSigned = (a) => {
+        let n = ((a + 180) % 360 + 360) % 360 - 180; 
+        return n; 
+      };
+
+      // --- PERSISTENCE (LocalStorage) ---
+      const saveSettings = () => {
+        const settings = {
+          rodDia: $('#rodDia').value,
+          length: $('#length').value,
+          lead: $('#lead').value,
+          holeDia: $('#holeDia').value,
+          cc: $('#cc').value,
+          hand: $('#right').checked ? 'right' : 'left',
+          start: $('#start').value,
+          custom: $('#custom').value,
+          zList: $('#zList').value
+        };
+        localStorage.setItem('oilhole_settings_v2', JSON.stringify(settings));
+      };
+
+      const loadSettings = () => {
+        const saved = localStorage.getItem('oilhole_settings_v2');
+        if (saved) {
+          try {
+            const s = JSON.parse(saved);
+            if(s.rodDia) $('#rodDia').value = s.rodDia;
+            if(s.length) $('#length').value = s.length;
+            if(s.lead) $('#lead').value = s.lead;
+            if(s.holeDia) $('#holeDia').value = s.holeDia;
+            if(s.cc) $('#cc').value = s.cc;
+            if(s.hand) {
+              if(s.hand === 'right') $('#right').checked = true;
+              else $('#left').checked = true;
+            }
+            if(s.start) $('#start').value = s.start;
+            if(s.custom) $('#custom').value = s.custom;
+            if(s.zList) $('#zList').value = s.zList;
+            
+            // Trigger visual update for custom dropdown
+            $('#customWrap').style.display = s.start === 'custom' ? 'block' : 'none';
+          } catch(e) { console.error('Error loading settings', e); }
+        }
+      };
+
+      // --- VALIDATION & CALC ---
+      const validate = () => {
+        let valid = true;
+        
+        // Rod Dia Check
+        const rodEl = $('#rodDia');
+        if (parseFloat(rodEl.value) <= 0 || !rodEl.value) {
+          rodEl.classList.add('error');
+          valid = false;
+        } else {
+          rodEl.classList.remove('error');
+        }
+
+        // Lead Check
+        const leadEl = $('#lead');
+        const leadVal = parseFloat(leadEl.value);
+        if (leadVal === 0 || !leadEl.value) {
+          leadEl.classList.add('error');
+          valid = false;
+        } else {
+          leadEl.classList.remove('error');
+        }
+
+        return valid;
+      };
+
+      const updateHelixBadge = (rodDia, lead) => {
+        if (!rodDia || !lead || lead === 0) {
+          $('#helixDisplay').textContent = "Helix: Err";
+          return;
+        }
+        // tan(helix) = (PI * D) / Lead
+        // helix = atan(...)
+        const rad = Math.atan((Math.PI * rodDia) / lead);
+        const deg = rad * (180 / Math.PI);
+        $('#helixDisplay').textContent = `Helix: ${deg.toFixed(2)}°`;
+      };
+
+      const compute = () => {
+        if (!validate()) return; // Stop if invalid
+
+        const L = parseFloat($('#length').value) || 0;
+        const lead = parseFloat($('#lead').value);
+        const rodDia = parseFloat($('#rodDia').value);
+        const holeDia = parseFloat($('#holeDia').value) || 2.5;
+        const cc = parseFloat($('#cc').value) || 10;
+        const rightHand = $('#right').checked;
+        const startVal = $('#start').value;
+        const s0 = startVal === 'custom' ? (parseFloat($('#custom').value) || 0) : parseFloat(startVal);
+
+        // Update Helix Display
+        updateHelixBadge(rodDia, lead);
+
+        // Parse Z List
+        let zs = $('#zList').value.split(',')
+          .map(v => parseFloat(v.trim()))
+          .filter(v => Number.isFinite(v));
+        
+        // Safety: If Z list is empty or weird, default to Start/Mid/End
+        if (zs.length === 0) zs = [0, L];
+
+        const zFront = zs[zs.length - 1]; // Last value usually
+        const theta = 360 * (zFront / lead) * (rightHand ? 1 : -1);
+        const angX = norm360(s0 + theta);
+        const angY = norm360(angX - 90);
+        
+        $('#ax').textContent = angX.toFixed(2) + '°';
+        $('#ay').textContent = angY.toFixed(2) + '°';
+        $('#axcw').textContent = 'CW: ' + (normSigned(angX) * -1).toFixed(2) + '°';
+        $('#aycw').textContent = 'CW: ' + (normSigned(angY) * -1).toFixed(2) + '°';
+
+        draw(zs, { rodDia, holeDia, cc, s0, rightHand, lead });
+        saveSettings(); // Auto-save on calculate
+      };
+
+      const draw = (zs, cfg) => {
+        const cvs = $('#view');
+        const ctx = cvs.getContext('2d');
+        const dpr = window.devicePixelRatio || 1;
+        
+        // Match CSS width
+        const rect = cvs.getBoundingClientRect();
+        cvs.width = rect.width * dpr;
+        cvs.height = 520 * dpr; 
+        
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, rect.width, 520);
+
+        // Grid Logic
+        const count = zs.length;
+        const cols = count > 2 ? 3 : count; // Max 3 cols
+        const rows = Math.ceil(count / 3);
+        
+        const pad = 20;
+        const gap = 20;
+        const cellW = (rect.width - (pad*2) - (gap * (cols-1))) / cols;
+        const totalH = 520 - (pad*2);
+        const cellH = Math.min(cellW * 1.2, totalH / Math.max(1, rows)); // Adapt height
+
+        zs.forEach((z, i) => {
+          const r = Math.floor(i / 3);
+          const c = i % 3;
+          const x = pad + c * (cellW + gap);
+          const y = pad + r * (cellH + gap);
+          
+          drawSection(ctx, x, y, cellW, cellH, z, cfg);
+        });
+      };
+
+      const drawSection = (ctx, x, y, w, h, z, cfg) => {
+        const cx = x + w/2; 
+        const cy = y + h/2;
+        const maxR = Math.min(w, h)/2 - 15;
+        
+        // Draw Label
+        ctx.fillStyle = '#6b7280';
+        ctx.font = '600 12px -apple-system,Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(`z = ${z}`, cx, y + 10);
+
+        // 1. Rod Circle
+        ctx.beginPath();
+        ctx.arc(cx, cy, maxR, 0, Math.PI*2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = '#374151';
+        ctx.stroke();
+
+        // 2. Axes
+        ctx.beginPath();
+        ctx.moveTo(cx - maxR - 5, cy); ctx.lineTo(cx + maxR + 5, cy); // X
+        ctx.moveTo(cx, cy - maxR - 5); ctx.lineTo(cx, cy + maxR + 5); // Y
+        ctx.strokeStyle = '#e5e7eb';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        // Labels for axes
+        ctx.fillStyle = '#9ca3af'; ctx.font = '10px Arial';
+        ctx.fillText('+X', cx + maxR + 2, cy - 4);
+        ctx.fillText('+Y', cx, cy - maxR - 2);
+
+        // 3. Calc Hole Position
+        const theta = 360 * (z / cfg.lead) * (cfg.rightHand ? 1 : -1);
+        const angleDeg = norm360(cfg.s0 + theta);
+        const angleRad = angleDeg * Math.PI / 180;
+
+        // Scale factors
+        const rodR_real = cfg.rodDia / 2;
+        const holeR_real = cfg.holeDia / 2;
+        const ccR_real = cfg.cc / 2;
+        
+        const pxPerMm = maxR / rodR_real;
+        const distPx = ccR_real * pxPerMm;
+        const holeRPx = Math.max(2, holeR_real * pxPerMm);
+
+        const h1 = {
+          x: cx + distPx * Math.cos(angleRad),
+          y: cy - distPx * Math.sin(angleRad) // Canvas Y is inverted
+        };
+        const h2 = {
+          x: cx + distPx * Math.cos(angleRad + Math.PI),
+          y: cy - distPx * Math.sin(angleRad + Math.PI)
+        };
+
+        // 4. Draw Center Line
+        ctx.beginPath();
+        ctx.moveTo(h1.x, h1.y);
+        ctx.lineTo(h2.x, h2.y);
+        ctx.strokeStyle = '#007aff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // 5. Draw Holes
+        [h1, h2].forEach(p => {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, holeRPx, 0, Math.PI*2);
+          ctx.fillStyle = '#1f2937';
+          ctx.fill();
+        });
+
+        // 6. Arc Indicator (Angle from X)
+        // Show only if not aligned with X
+        if (Math.abs(angleDeg) > 0.1 && Math.abs(angleDeg - 360) > 0.1) {
+            ctx.beginPath();
+            const arcR = maxR * 0.4;
+            // Draw arc from 0 (X-axis) to angle
+            // Note: Canvas arc angles are clockwise positive visually if not careful, 
+            // but standard math is CCW. transform is normal. 
+            // Canvas Arc: 0 is 3 o'clock. 
+            // We need to draw from 0 to -angleRad (because Y is flip in canvas coords vs cartesian)
+            ctx.arc(cx, cy, arcR, 0, -angleRad, angleRad > Math.PI); // Draw the "short" way or long way? Let's just draw standard CCW
+            ctx.strokeStyle = 'rgba(0, 122, 255, 0.4)';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // Text
+            ctx.fillStyle = '#007aff';
+            ctx.textAlign = 'left';
+            ctx.fillText(angleDeg.toFixed(1) + '°', cx + 6, cy - 6);
+        }
+      };
+
+      const downloadImage = () => {
+        const link = document.createElement('a');
+        link.download = 'oilhole-view-' + new Date().toISOString().slice(0,10) + '.png';
+        link.href = $('#view').toDataURL();
+        link.click();
+      };
+
+      const resetDefaults = () => {
+        if(confirm('Reset all values to default?')) {
+          localStorage.removeItem('oilhole_settings_v2');
+          location.reload();
+        }
+      };
+
+      // --- EVENTS ---
+      $('#calc').addEventListener('click', compute);
+      $('#downloadBtn').addEventListener('click', downloadImage);
+      $('#resetBtn').addEventListener('click', resetDefaults);
+      
+      $('#start').addEventListener('change', (e) => {
+        $('#customWrap').style.display = e.target.value === 'custom' ? 'block' : 'none';
+      });
+
+      // Inputs auto-calc on Enter
+      document.querySelectorAll('input').forEach(el => {
+        el.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') compute();
+        });
+      });
+
+      // INIT
+      loadSettings();
+      setTimeout(compute, 100); // Slight delay to ensure font/layout stability
+      window.addEventListener('resize', () => { compute(); });
+    });
+  </script>
+</body>
+</html>

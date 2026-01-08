@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เครื่องคำนวณมุมรูน้ำมัน Endmill</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7fa; margin: 0; padding: 10px; color: #333; }
+        
+        /* Container หลัก - จัดเป็น Flexbox 3 คอลัมน์ */
+        .container { 
+            max-width: 1400px; 
+            margin: auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); 
+            display: flex; 
+            flex-direction: row; 
+            gap: 20px; 
+            align-items: flex-start; /* ให้ทุกคอลัมน์เริ่มจากด้านบน */
+        }
+        
+        /* --- Column 1: Input --- */
+        .col-input { 
+            flex: 0 0 320px; /* ความกว้าง Fix ประมาณ 320px */
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+            border-right: 1px solid #eee;
+            padding-right: 20px;
+        }
+
+        /* --- Column 2: Result --- */
+        .col-result { 
+            flex: 0 0 320px; /* ความกว้าง Fix ประมาณ 320px */
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px;
+            border-right: 1px solid #eee;
+            padding-right: 20px;
+        }
+
+        /* --- Column 3: Graphic --- */
+        .col-graphic { 
+            flex: 1; /* กินพื้นที่ที่เหลือทั้งหมด */
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start;
+            padding: 10px;
+            min-height: 400px;
+        }
+
+        /* Styling Inputs */
+        form { display: grid; gap: 15px; }
+        .input-group { display: flex; align-items: center; justify-content: space-between; }
+        .input-group label { flex: 1; font-weight: bold; font-size: 16px; color: #555; }
+        .input-group input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; }
+
+        /* Styling Results */
+        #result-box { 
+            padding: 20px; 
+            background-color: #e9f7ff; 
+            border-radius: 8px; 
+            border: 1px solid #bee5ff; 
+            font-size: 17px; 
+            line-height: 1.6; 
+            width: 100%;
+            box-sizing: border-box;
+        }
+        #result-box h3 { margin-top: 0; font-size: 1.2em; border-bottom: 1px solid #bee5ff; padding-bottom: 10px; margin-bottom: 15px; }
+        
+        /* Styling Graphic */
+        svg { 
+            width: 100%; 
+            height: auto; 
+            max-width: 450px; /* ยอมให้ขยายได้ใหญ่ขึ้นตามพื้นที่คอลัมน์ขวา */
+            display: block;
+        }
+
+        h1 { text-align: center; color: #007bff; margin-bottom: 25px; font-size: 28px; width: 100%; }
+        button { padding: 14px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 18px; font-weight: bold; transition: background-color 0.3s; margin-top: 10px; width: 100%; }
+        button:hover { background-color: #0056b3; }
+        
+        .highlight { font-weight: bold; color: #007bff; }
+        .highlight-neg { font-weight: bold; color: #dc3545; }
+        .error { color: #721c24; background-color: #f8d7da; padding: 15px; border-radius: 5px; font-size: 16px; }
+        footer { text-align: center; margin-top: 25px; font-size: 14px; color: #777; }
+
+        /* --- Responsive: เมื่อจอเล็กกว่า 1100px ให้เรียงเป็นแนวตั้ง --- */
+        @media (max-width: 1100px) { 
+            .container { flex-direction: column; align-items: stretch; }
+            .col-input, .col-result, .col-graphic { 
+                flex: auto; 
+                width: 100%; 
+                border-right: none; 
+                border-bottom: 1px solid #eee; 
+                padding-right: 0;
+                padding-bottom: 20px;
+            }
+            .col-graphic { border-bottom: none; }
+        }
+    </style>
+</head>
+<body>
+    <h1>เครื่องคำนวณมุมรูน้ำมัน Endmill</h1>
+    <div class="container">
+        
+        <div class="col-input">
+            <h3 style="margin-top:0; color:#555; text-align:center;">1. ข้อมูลนำเข้า</h3>
+            <form id="calcForm">
+                <div class="input-group">
+                    <label>Diameter (D)</label>
+                    <input type="number" id="diameter" step="0.01" value=" ">
+                </div>
+                <div class="input-group">
+                    <label>Helix (องศา)</label>
+                    <input type="number" id="helix" step="0.01" value=" ">
+                </div>
+                <div class="input-group">
+                    <label>มุมเริ่มต้น</label>
+                    <input type="number" id="initial_angle" step="0.01" value="15">
+                </div>
+                <hr style="width:100%; border:0; border-top:1px solid #eee; margin: 5px 0;">
+                <div class="input-group">
+                    <label>ระยะ a</label>
+                    <input type="number" id="dist_a" step="0.01" value=" ">
+                </div>
+                <div class="input-group">
+                    <label>ระยะ b</label>
+                    <input type="number" id="dist_b" step="0.01" value=" ">
+                </div>
+                <div class="input-group">
+                    <label>ระยะ c</label>
+                    <input type="number" id="dist_c" step="0.01">
+                </div>
+                <div class="input-group">
+                    <label>ระยะ d</label>
+                    <input type="number" id="dist_d" step="0.01">
+                </div>
+                <button type="button" onclick="calculateAngles()">คำนวณ</button>
+            </form>
+        </div>
+
+        <div class="col-result">
+            <h3 style="margin-top:0; color:#555; text-align:center;">2. ผลการคำนวณ</h3>
+            <div id="result-box">
+                <p style="color:#888; text-align:center;">กดปุ่มคำนวณเพื่อแสดงข้อมูล</p>
+            </div>
+        </div>
+
+        <div class="col-graphic">
+             <div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+                <h3 style="margin-top:0; color:#555; text-align:center;">3. ภาพจำลอง</h3>
+                <div id="graphic-container" style="width:100%; display:flex; justify-content:center;">
+                    <p style="color:#aaa; margin-top:50px;">ภาพจะแสดงที่นี่</p>
+                </div>
+             </div>
+        </div>
+
+    </div>
+    <footer>Refer : RDT0521-31490 | Revised (V.9 3-Column Layout)</footer>
+
+    <script>
+        function calculateAngles() {
+            const resultBox = document.getElementById('result-box');
+            
+            // 1. Validation
+            const D = parseFloat(document.getElementById('diameter').value);
+            const helixDeg = parseFloat(document.getElementById('helix').value);
+            const initial = parseFloat(document.getElementById('initial_angle').value);
+            
+            if (isNaN(D) || isNaN(helixDeg) || isNaN(initial)) {
+                resultBox.innerHTML = '<div class="error">กรุณากรอกข้อมูล Diameter, Helix และมุมเริ่มต้น</div>';
+                return;
+            }
+            if (helixDeg <= 0 || helixDeg >= 90) {
+                 resultBox.innerHTML = '<div class="error">ค่า Helix ต้อง > 0 และ < 90</div>';
+                 return;
+            }
+
+            const getVal = (id) => { const val = document.getElementById(id).value; return val === "" ? 0 : parseFloat(val); };
+            const distInput = [
+                {l:'a', v: getVal('dist_a')}, {l:'b', v: getVal('dist_b')},
+                {l:'c', v: getVal('dist_c')}, {l:'d', v: getVal('dist_d')}
+            ];
+            
+            let dists = distInput.filter(d => d.v > 0).sort((x, y) => x.v - y.v);
+            
+            if (dists.length < 1) {
+                resultBox.innerHTML = '<div class="error">ระบุระยะอย่างน้อย 1 ค่า</div>';
+                return;
+            }
+            
+            // 2. Calculation
+            const helixRad = helixDeg * (Math.PI / 180);
+            const lead = (Math.PI * D) / Math.tan(helixRad);
+            
+            let output = `<strong>Lead:</strong> ${lead.toFixed(3)} มม.<br><hr style="margin: 15px 0;">`;
+            
+            let prevAngle = initial;
+            let prevDistVal = 0;
+            let plotData = [];
+
+            dists.forEach((item) => {
+                const distDiff = item.v - prevDistVal; 
+                const twist = (distDiff / lead) * 360;
+                const currentAngle = prevAngle - twist; 
+                
+                const direction = currentAngle >= 0 ? '(+)' : '(-)';
+                const absAngle = Math.abs(currentAngle);
+                const classColor = currentAngle >= 0 ? 'highlight' : 'highlight-neg';
+
+                output += `<div style="margin-bottom:12px;">
+                    <strong>ระยะ ${item.l} (${item.v}):</strong> 
+                    <span class="${classColor}" style="font-size:1.1em;">${toDegMin(absAngle)}</span> ${direction}
+                    <div style="font-size:0.9em; color:#666; margin-top:4px;">(Dec: ${currentAngle.toFixed(3)}°)</div>
+                </div>`;
+                
+                plotData.push({
+                    label: item.l,
+                    angle: currentAngle,
+                    color: currentAngle >= 0 ? '#007bff' : '#dc3545'
+                });
+
+                prevAngle = currentAngle;
+                prevDistVal = item.v;
+            });
+            
+            resultBox.innerHTML = output;
+
+            // 3. Draw Graphic
+            drawSVG(plotData);
+        }
+
+        function drawSVG(dataPoints) {
+            // ขนาด Canvas พื้นฐาน (Coordinate System)
+            const size = 500; 
+            const center = size / 2;
+            const radius = 140; 
+            
+            let svgContent = `<svg viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#007bff" /></marker>
+                    <marker id="arrow-red" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#dc3545" /></marker>
+                </defs>
+                <style>
+                    .axis { stroke: #ccc; stroke-width: 1; }
+                    .main-circle { stroke: #333; stroke-width: 2; fill: none; }
+                    .center-mark { stroke: #333; stroke-width: 1; }
+                    .angle-line { stroke-width: 2; stroke-dasharray: 6,3; }
+                    .label-bg { fill: white; stroke: #333; stroke-width: 1; }
+                    /* Font ใหญ่ตามต้องการ */
+                    .label-text { font-family: sans-serif; font-size: 28px; font-weight: bold; text-anchor: middle; alignment-baseline: middle; }
+                    .angle-text { font-family: sans-serif; font-size: 22px; font-weight: bold; }
+                </style>
+                
+                <circle cx="${center}" cy="${center}" r="${radius}" class="main-circle" />
+                <line x1="${center}" y1="20" x2="${center}" y2="${size-20}" class="axis" />
+                <line x1="20" y1="${center}" x2="${size-20}" y2="${center}" class="axis" />
+                <line x1="${center-8}" y1="${center}" x2="${center+8}" y2="${center}" class="center-mark"/>
+                <line x1="${center}" y1="${center-8}" x2="${center}" y2="${center+8}" class="center-mark"/>
+                
+                <text x="${center}" y="${size-15}" text-anchor="middle" fill="#999" font-size="20" font-weight="bold">0°</text>
+            `;
+
+            dataPoints.forEach((pt, index) => {
+                const rad = (90 - pt.angle) * (Math.PI / 180);
+                const lineLen = radius + 20; 
+                const x = center + lineLen * Math.cos(rad);
+                const y = center + lineLen * Math.sin(rad);
+                
+                svgContent += `<line x1="${center}" y1="${center}" x2="${x}" y2="${y}" class="angle-line" stroke="${pt.color}" />`;
+                
+                const arcR = 60 + (index * 40); // เพิ่มระยะห่างวงแต่ละชั้นให้มากขึ้นเพราะ font ใหญ่
+                const arcRad = (90 - pt.angle) * (Math.PI / 180);
+                const arcX = center + arcR * Math.cos(arcRad);
+                const arcY = center + arcR * Math.sin(arcRad);
+                const startX = center; 
+                const startY = center + arcR; 
+                const sweep = pt.angle >= 0 ? 0 : 1; 
+                const marker = pt.angle >= 0 ? "url(#arrow-blue)" : "url(#arrow-red)";
+                
+                if (Math.abs(pt.angle) > 0.1) {
+                    svgContent += `<path d="M ${startX} ${startY} A ${arcR} ${arcR} 0 0 ${sweep} ${arcX} ${arcY}" fill="none" stroke="${pt.color}" marker-end="${marker}" stroke-opacity="0.6" />`;
+                }
+
+                const labelDist = lineLen + 30; // ขยับ label ออกไปอีก
+                const labelX = center + labelDist * Math.cos(rad);
+                const labelY = center + labelDist * Math.sin(rad);
+                
+                svgContent += `
+                    <g>
+                        <circle cx="${labelX}" cy="${labelY}" r="24" class="label-bg" />
+                        <text x="${labelX}" y="${labelY+9}" class="label-text" fill="${pt.color}">${pt.label}</text>
+                        <text x="${labelX}" y="${labelY+50}" class="angle-text" text-anchor="middle" fill="${pt.color}">${toDegMin(Math.abs(pt.angle))}</text>
+                    </g>
+                `;
+            });
+
+            svgContent += `</svg>`;
+            document.getElementById('graphic-container').innerHTML = svgContent;
+        }
+
+        function toDegMin(decimalDeg) {
+            let degrees = Math.floor(decimalDeg);
+            let minutes = Math.round((decimalDeg - degrees) * 60);
+            if (minutes === 60) { degrees += 1; minutes = 0; }
+            return `${degrees}°${minutes}'`;
+        }
+    </script>
+</body>
+</html>

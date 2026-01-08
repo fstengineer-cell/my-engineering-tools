@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Yakibame Calculator</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Kanit:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #059669;
+            --danger: #dc2626;
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --radius: 16px;
+            --font-thai: 'Kanit', sans-serif;
+            --font-eng: 'Inter', sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-thai);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 15px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-weight: 300;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            width: 100%;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-weight: 400;
+            color: var(--text-main);
+            margin: 0;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header i { color: var(--primary); }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            position: relative;
+            overflow: visible; 
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 400;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- Diagram Area --- */
+        .diagram-container {
+            width: 100%;
+            background: #fafafa;
+            border-radius: 12px;
+            border: 1px dashed #e5e7eb;
+            position: relative;
+            overflow: hidden;
+            transition: height 0.3s ease; 
+        }
+
+        .drawing-wrapper {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 665px;
+            height: 399px;
+            background-color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform-origin: top center;
+            transition: transform 0.3s ease;
+            margin-left: -332.5px; 
+        }
+
+        .bg-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* --- Interactive Tags (Results) --- */
+        .tag {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 4px;
+            font-family: var(--font-eng);
+            font-size: 19px; 
+            font-weight: 500;
+            color: var(--text-main);
+            white-space: nowrap;
+            z-index: 10;
+            
+            background: transparent;
+            border: none;
+            box-shadow: none;
+
+            text-shadow: 
+                -1px -1px 0 rgba(255,255,255,0.9),  
+                 1px -1px 0 rgba(255,255,255,0.9),
+                -1px  1px 0 rgba(255,255,255,0.9),
+                 1px  1px 0 rgba(255,255,255,0.9);
+        }
+
+        /* --- Input Style (New Style) --- */
+        .input-group {
+            /* 1. Before Input: Gray Background, No Border */
+            background-color: #e2e8f0;
+            border: none;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            
+            border-radius: 6px;
+            cursor: text;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-shadow: none; /* No text shadow on gray bg */
+            padding: 4px 8px; /* Slightly adjust padding for the group */
+        }
+
+        .input-group span {
+            color: #64748b; /* Muted color for Ø symbol initially */
+            transition: color 0.3s;
+        }
+
+        .input-group.filled {
+            /* 2. After Input (Has Value): Transparent Background */
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+        }
+
+        .input-group.filled span {
+            color: var(--primary);
+            text-shadow: 
+                -1px -1px 0 rgba(255,255,255,0.9),  
+                 1px -1px 0 rgba(255,255,255,0.9),
+                -1px  1px 0 rgba(255,255,255,0.9),
+                 1px  1px 0 rgba(255,255,255,0.9);
+        }
+
+        /* 3. Interaction (Hover/Focus): Active State */
+        #pos-dia-a:hover,
+        #pos-dia-a:focus-within {
+            transform: translate(-50%, -50%) rotate(0deg) scale(1.2); 
+            z-index: 100;
+            background-color: white;
+            border: 2px solid var(--primary);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            
+            /* Remove text shadow when editing/hovering for clarity */
+            text-shadow: none; 
+        }
+        
+        #pos-dia-a:hover span,
+        #pos-dia-a:focus-within span {
+            color: var(--text-main);
+            text-shadow: none;
+        }
+
+        .input-group.error {
+            border: 2px solid var(--danger) !important;
+            background-color: #fef2f2 !important;
+        }
+
+        .embedded-input {
+            width: 60px;
+            font-family: var(--font-eng);
+            font-size: 24px; 
+            font-weight: 500;
+            
+            /* Initial text color */
+            color: #475569; 
+            
+            background: transparent;
+            border: none;
+            outline: none;
+            text-align: center;
+            padding: 0;
+            margin: 0 2px;
+        }
+        
+        .input-group.filled .embedded-input {
+             color: var(--primary);
+             font-weight: 600;
+             text-shadow: 
+                -1px -1px 0 rgba(255,255,255,0.9),  
+                 1px -1px 0 rgba(255,255,255,0.9),
+                -1px  1px 0 rgba(255,255,255,0.9),
+                 1px  1px 0 rgba(255,255,255,0.9);
+        }
+        
+        #pos-dia-a:hover .embedded-input,
+        #pos-dia-a:focus-within .embedded-input {
+            color: var(--text-main);
+            text-shadow: none;
+        }
+
+        .embedded-input::placeholder {
+            color: transparent; /* Hide placeholder */
+        }
+
+        .tol-stack {
+            display: inline-flex;
+            flex-direction: column;
+            font-size: 0.65em;
+            margin-left: 4px;
+            color: #111827;
+            font-weight: 500;
+            line-height: 1;
+            vertical-align: middle;
+        }
+        
+        .input-group.filled .tol-stack {
+            color: var(--primary);
+            text-shadow: 
+                -1px -1px 0 rgba(255,255,255,0.9),  
+                 1px -1px 0 rgba(255,255,255,0.9),
+                -1px  1px 0 rgba(255,255,255,0.9),
+                 1px  1px 0 rgba(255,255,255,0.9);
+        }
+
+        .rotate-center {
+            transform: translate(-50%, -50%) rotate(-90deg);
+            transform-origin: center center;
+        }
+
+        /* Coordinates */
+        #pos-dia-a  { top: 115px; left: 365px; }
+        #pos-dia-b  { top: 115px; left: 290px; }
+        #pos-a3     { top: 155px; left: 645px; }
+        #pos-d      { top: 280px; left: 365px; }
+        #pos-c      { top: 285px; left: 170px; }
+        #pos-c-2    { top: 298px; left: 448px; }
+
+        /* Toast Notification */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 90%;
+            max-width: 400px;
+        }
+        .toast {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.error { border-left: 4px solid var(--danger); color: var(--danger); }
+
+    </style>
+</head>
+<body onload="init()">
+
+    <div id="toast-container"></div>
+
+    <header class="header">
+        <h1>
+            <i class="fas fa-drafting-compass"></i>
+            Yakibame Calculator
+        </h1>
+    </header>
+
+    <div class="container">
+        
+        <div class="card">
+            <div class="card-title">
+                <i class="fas fa-crosshairs"></i> Interactive Diagram
+            </div>
+            
+            <div id="diagramContainer" class="diagram-container">
+                <div id="drawingWrapper" class="drawing-wrapper">
+                    <!-- แก้ Path รูปภาพตรงนี้ -->
+                    <img src="../images/yaki.svg" alt="Engineering Drawing" class="bg-image" onerror="this.style.opacity='0.5'">
+
+                    <!-- Input Box -->
+                    <div id="pos-dia-a" class="tag input-group rotate-center">
+                        <span>Ø</span>
+                        <input type="number" id="inputDia" class="embedded-input" placeholder="?" oninput="handleInput()">
+                        <div class="tol-stack" id="val-a-tol"></div>
+                    </div>
+
+                    <!-- Result Tags -->
+                    <div id="pos-dia-b" class="tag rotate-center">
+                        <span id="val-b-main">-</span>
+                        <div class="tol-stack" id="val-b-tol"></div>
+                    </div>
+
+                    <div id="pos-a3" class="tag rotate-center">
+                        <span id="val-a3">-</span>
+                    </div>
+
+                    <div id="pos-c" class="tag">
+                        <span id="val-c">-</span>
+                    </div>
+
+                    <div id="pos-c-2" class="tag">
+                        <span id="val-c-2">-</span>
+                    </div>
+
+                    <div id="pos-d" class="tag rotate-center">
+                        <span id="val-d">-</span>
+                    </div>
+                </div>
+            </div>
+            <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 10px; font-weight: 300;">
+                <i class="fas fa-info-circle"></i> แตะที่ช่องสี่เหลี่ยมสีเทาเพื่อระบุขนาด Ø
+            </p>
+        </div>
+
+    </div>
+
+<script>
+    /** Yakibame Calculator Logic (Responsive Enhanced) */
+
+    // Constants for Drawing Size
+    const DRAWING_WIDTH = 665;
+    const DRAWING_HEIGHT = 399;
+    
+    // UI Elements
+    const diagramContainer = document.getElementById('diagramContainer');
+    const drawingWrapper = document.getElementById('drawingWrapper');
+
+    // Function: Update Scale & Height based on Screen Width
+    function updateLayout() {
+        if (!diagramContainer || !drawingWrapper) return;
+
+        // หาความกว้างพื้นที่ว่างใน Card (ลบ Padding ออกแล้ว)
+        const availableWidth = diagramContainer.clientWidth;
+        
+        // คำนวณ Scale โดยเทียบกับความกว้างรูปจริง (665px)
+        let scale = availableWidth / DRAWING_WIDTH;
+        if (scale > 1) scale = 1;
+
+        // สั่งย่อ/ขยาย Wrapper
+        drawingWrapper.style.transform = `scale(${scale})`;
+
+        // ปรับความสูงของ Container ให้พอดีกับรูปที่ถูกย่อ
+        diagramContainer.style.height = `${DRAWING_HEIGHT * scale}px`;
+    }
+
+    // เรียกใช้ฟังก์ชันเมื่อโหลดหน้า และเมื่อหมุนจอ/ย่อขยายจอ
+    function init() {
+        updateLayout();
+        window.addEventListener('resize', updateLayout);
+    }
+
+    // --- Original Logic Below ---
+
+    // Database
+    const DATABASE = [
+        { key: 5,  b: 5.009,  c: "14~18", d: 2.5, a3: 2.0 },
+        { key: 6,  b: 6.010,  c: "15~19", d: 2.5, a3: 3.0 },
+        { key: 7,  b: 7.012,  c: "16~20", d: 2.5, a3: 4.0 },
+        { key: 8,  b: 8.014,  c: "17~21", d: 2.5, a3: 5.0 },
+        { key: 9,  b: 9.015,  c: "18~22", d: 3.0, a3: 6.0 },
+        { key: 10, b: 10.017, c: "19~23", d: 3.0, a3: 7.0 },
+        { key: 11, b: 11.018, c: "20~24", d: 3.5, a3: 8.0 },
+        { key: 12, b: 12.020, c: "21~25", d: 4.0, a3: 9.0 },
+        { key: 13, b: 13.022, c: "22~26", d: 4.5, a3: 10.0 },
+        { key: 14, b: 14.023, c: "23~28", d: 4.5, a3: 11.0 },
+        { key: 15, b: 15.025, c: "24~28", d: 5.0, a3: 12.0 },
+        { key: 16, b: 16.026, c: "25~29", d: 5.0, a3: 13.0 },
+        { key: 17, b: 17.028, c: "26~30", d: 5.5, a3: 14.0 },
+        { key: 18, b: 18.030, c: "27~31", d: 5.5, a3: 15.0 },
+        { key: 19, b: 19.031, c: "28~32", d: 6.0, a3: 16.0 },
+        { key: 20, b: 20.032, c: "30~34", d: 6.0, a3: 17.0 }
+    ];
+
+    const handleInput = () => {
+        const inputEl = document.getElementById('inputDia');
+        const container = document.getElementById('pos-dia-a');
+        const val = parseFloat(inputEl.value);
+
+        container.classList.remove('error');
+
+        // Toggle 'filled' class for styling
+        if (inputEl.value.trim() !== "") {
+            container.classList.add('filled');
+        } else {
+            container.classList.remove('filled');
+        }
+
+        if (isNaN(val)) {
+            clearDisplay();
+            return;
+        }
+
+        const row = DATABASE.find(item => item.key === val);
+
+        if (!row) {
+            container.classList.add('error');
+            clearDisplay();
+            showToast(`ไม่พบข้อมูลขนาด Ø${val} (ลอง 5-20)`, 'error');
+            return;
+        }
+
+        renderResults(val, row);
+    };
+
+    const renderResults = (val, row) => {
+        const tolHtml = (val <= 12) 
+            ? `<span>0</span><span>-0.005</span>` 
+            : `<span>±0.005</span>`;
+
+        updateText('val-a-tol', tolHtml, true);
+        updateText('val-b-tol', tolHtml, true);
+        updateText('val-b-main', `Ø${row.b.toFixed(3)}`);
+        updateText('val-a3', `Ø${row.a3.toFixed(1)}`);
+        updateText('val-d', row.d.toFixed(1));
+        updateText('val-c', row.c);
+        updateText('val-c-2', row.c);
+    };
+
+    const updateText = (id, value, isHTML = false) => {
+        const el = document.getElementById(id);
+        if (el) {
+            isHTML ? el.innerHTML = value : el.innerText = value;
+        }
+    };
+
+    const clearDisplay = () => {
+        ['val-b-main', 'val-a3', 'val-d', 'val-c', 'val-c-2'].forEach(id => updateText(id, '-'));
+        document.getElementById('val-b-tol').innerHTML = "";
+        document.getElementById('val-a-tol').innerHTML = "";
+    };
+
+    let toastTimeout;
+    const showToast = (message, type = 'success') => {
+        const container = document.getElementById('toast-container');
+        container.innerHTML = ''; 
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        toast.innerHTML = `<i class="fas fa-exclamation-triangle"></i><span>${message}</span>`;
+        container.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 10);
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    };
+</script>
+</body>
+</html>

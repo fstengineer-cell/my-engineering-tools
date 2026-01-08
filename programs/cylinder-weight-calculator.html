@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stepped Cylinder Weight Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 20px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        h1 { grid-column: 1 / -1; margin-top: 0; color: var(--primary); }
+
+        /* Left Panel: Inputs */
+        .input-panel {
+            border-right: 1px solid var(--border);
+            padding-right: 20px;
+            overflow-y: auto;
+            max-height: 80vh;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; }
+        
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        
+        input::placeholder {
+            color: #cbd5e1;
+        }
+
+        .section-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-item {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            position: relative;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #64748b;
+        }
+
+        .row-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            font-family: 'Sarabun', sans-serif;
+        }
+
+        .btn-add { background-color: var(--primary); color: white; width: 100%; margin-top: 10px; }
+        .btn-add:hover { background-color: #1d4ed8; }
+
+        .btn-delete {
+            background-color: #ef4444;
+            color: white;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+        }
+        .btn-delete:hover { background-color: #dc2626; }
+
+        /* Right Panel: Visualization & Result */
+        .display-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .canvas-container {
+            flex-grow: 1;
+            background-color: #ffffff; 
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            min-height: 400px;
+            border: 1px solid #cbd5e1;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .result-box {
+            background: #ecfdf5;
+            border: 1px solid #10b981;
+            color: #065f46;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .result-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 5px 0;
+        }
+
+        .sub-value {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+        
+        .empty-state-text {
+            color: #94a3b8;
+            font-size: 1.2rem;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+            .input-panel { border-right: none; padding-right: 0; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📐 โปรแกรมคำนวณน้ำหนักวัสดุทรงกระบอก</h1>
+
+    <div class="input-panel">
+        <div class="form-group">
+            <label>1. เลือกชนิดวัสดุ (Material Type)</label>
+            <select id="materialSelect" onchange="calculate()">
+                <option value="7.86">Steel (เหล็ก)</option>
+                <option value="14.9">Carbide (คาร์ไบด์)</option>
+                <option value="2.73">Aluminum (อลูมิเนียม)</option>
+                <option value="4.5">Titanium (ไทเทเนียม)</option>
+                <option value="7.92">Stainless (สแตนเลส)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>2. กำหนดขนาด (Dimensions)</label>
+            <div id="sectionContainer" class="section-list">
+                </div>
+            <button class="btn btn-add" onclick="addSection()">+ เพิ่มท่อน (Add Step)</button>
+        </div>
+        
+        <div style="margin-top: 20px; font-size: 0.85rem; color: #666;">
+            * ใส่ขนาดหน่วยเป็น มิลลิเมตร (mm)<br>
+            * กรอกตัวเลขในช่องว่างเพื่อเริ่มคำนวณ
+        </div>
+    </div>
+
+    <div class="display-panel">
+        <div class="canvas-container" id="canvasWrapper">
+            <canvas id="drawingCanvas"></canvas>
+            <div id="emptyState" class="empty-state-text" style="position: absolute;">รอข้อมูลการคำนวณ...</div>
+        </div>
+
+        <div class="result-box">
+            <div>น้ำหนักรวม (Total Weight)</div>
+            <div class="result-value" id="weightGram">0.00 g</div>
+            <div class="sub-value" id="weightKg">0.000 kg</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Data Structure: Start with EMPTY strings
+    let sections = [
+        { id: 1, dia: '', len: '' } 
+    ];
+
+    window.onload = function() {
+        renderSections();
+        resizeCanvas();
+        calculate();
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            calculate();
+        });
+    };
+
+    function resizeCanvas() {
+        const wrapper = document.getElementById('canvasWrapper');
+        const canvas = document.getElementById('drawingCanvas');
+        canvas.width = wrapper.clientWidth;
+        canvas.height = wrapper.clientHeight;
+        calculate(); // Redraw
+    }
+
+    function renderSections() {
+        const container = document.getElementById('sectionContainer');
+        container.innerHTML = '';
+
+        sections.forEach((sec, index) => {
+            const div = document.createElement('div');
+            div.className = 'section-item';
+            div.innerHTML = `
+                <div class="section-header">
+                    <span>Step ${index + 1}</span>
+                    ${sections.length > 1 ? `<button class="btn btn-delete" onclick="removeSection(${index})">ลบ</button>` : ''}
+                </div>
+                <div class="row-inputs">
+                    <div>
+                        <label style="font-size:0.8rem">Diameter (mm)</label>
+                        <input type="number" value="${sec.dia}" oninput="updateSection(${index}, 'dia', this.value)" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label style="font-size:0.8rem">Length (mm)</label>
+                        <input type="number" value="${sec.len}" oninput="updateSection(${index}, 'len', this.value)" placeholder="0.00">
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function addSection() {
+        // Add new empty section
+        sections.push({ id: Date.now(), dia: '', len: '' });
+        renderSections();
+        // Focus logic could be added here if needed, but keeping it simple
+    }
+
+    function removeSection(index) {
+        if (sections.length > 1) {
+            sections.splice(index, 1);
+            renderSections();
+            calculate();
+        }
+    }
+
+    function updateSection(index, field, value) {
+        // Keep as string to allow empty input without jumping to 0
+        sections[index][field] = value;
+        calculate();
+    }
+
+    function calculate() {
+        const density = parseFloat(document.getElementById('materialSelect').value);
+        let totalVolumeCm3 = 0;
+        
+        // Check if we have valid data to draw
+        let hasValidData = false;
+
+        // Create a temporary array for calculation that treats empty strings as 0
+        // BUT we only want to draw if there's actual number
+        const calcSections = sections.map(sec => {
+            const d = parseFloat(sec.dia) || 0;
+            const l = parseFloat(sec.len) || 0;
+            if(d > 0 && l > 0) hasValidData = true;
+            return { dia: d, len: l };
+        });
+
+        calcSections.forEach(sec => {
+            const r_cm = (sec.dia / 2) / 10;
+            const h_cm = sec.len / 10;
+            const volume = Math.PI * Math.pow(r_cm, 2) * h_cm;
+            totalVolumeCm3 += volume;
+        });
+
+        const weightG = totalVolumeCm3 * density;
+        const weightKg = weightG / 1000;
+
+        document.getElementById('weightGram').innerText = weightG.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " g";
+        document.getElementById('weightKg').innerText = weightKg.toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 4 }) + " kg";
+
+        if (hasValidData) {
+            document.getElementById('emptyState').style.display = 'none';
+            drawGraphic(calcSections);
+        } else {
+            document.getElementById('emptyState').style.display = 'block';
+            // Clear canvas
+            const canvas = document.getElementById('drawingCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    }
+
+    // --- Drawing Functions ---
+
+    function drawGraphic(dataSections) {
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+
+        ctx.clearRect(0, 0, width, height);
+        
+        // Filter out zero dimensions for drawing to prevent errors or weird lines
+        const drawSections = dataSections.filter(s => s.len > 0 && s.dia > 0);
+        if (drawSections.length === 0) return;
+
+        let totalLen = 0;
+        let maxDia = 0;
+        drawSections.forEach(sec => {
+            totalLen += sec.len;
+            if (sec.dia > maxDia) maxDia = sec.dia;
+        });
+
+        // Reserve space for dimensions
+        const dimPaddingBottom = 50; 
+        const dimPaddingTop = 40;    
+        
+        const padding = 50;
+        const availWidth = width - (padding * 2);
+        const availHeight = height - dimPaddingBottom - dimPaddingTop - (padding);
+
+        const scaleX = availWidth / totalLen;
+        const scaleY = availHeight / maxDia;
+        const scale = Math.min(scaleX, scaleY);
+
+        const startX = (width - (totalLen * scale)) / 2;
+        const centerY = (height - dimPaddingBottom + dimPaddingTop) / 2; 
+
+        // 1. Draw Centerline
+        ctx.strokeStyle = '#94a3b8';
+        ctx.setLineDash([10, 5, 2, 5]); 
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(startX - 20, centerY);
+        ctx.lineTo(startX + (totalLen * scale) + 20, centerY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // 2. Draw Sections
+        let currentX = startX;
+        ctx.strokeStyle = '#0f172a'; 
+        ctx.lineWidth = 2;
+
+        drawSections.forEach(sec => {
+            const drawW = sec.len * scale;
+            const drawH = sec.dia * scale;
+            const drawY = centerY - (drawH / 2);
+
+            // Fill
+            let gradient = ctx.createLinearGradient(0, drawY, 0, drawY + drawH);
+            gradient.addColorStop(0, '#cbd5e1');
+            gradient.addColorStop(0.3, '#f1f5f9'); 
+            gradient.addColorStop(0.6, '#94a3b8');
+            gradient.addColorStop(1, '#64748b'); 
+            ctx.fillStyle = gradient;
+            
+            ctx.fillRect(currentX, drawY, drawW, drawH);
+            ctx.strokeRect(currentX, drawY, drawW, drawH);
+
+            // --- Dimensions ---
+            const dimColor = '#dc2626'; 
+            
+            // Length Dimension (Bottom)
+            drawLinearDimension(ctx, 
+                currentX, centerY + (drawH/2), 
+                currentX + drawW, centerY + (drawH/2), 
+                sec.len + '', 
+                dimPaddingBottom - 15, 
+                true 
+            );
+
+            // Diameter Dimension (Center/Vertical)
+            drawArrowLine(ctx, 
+                currentX + (drawW/2), centerY - (drawH/2), 
+                currentX + (drawW/2), centerY + (drawH/2)
+            ); 
+            
+            // Text background
+            ctx.strokeStyle = dimColor;
+            ctx.fillStyle = dimColor;
+            ctx.lineWidth = 1;
+            ctx.font = "14px Sarabun";
+            ctx.textAlign = "center";
+
+            const txt = 'Ø' + sec.dia;
+            const textWidth = ctx.measureText(txt).width;
+            const midX = currentX + (drawW/2);
+
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.fillRect(midX - (textWidth/2) - 2, centerY - 8, textWidth + 4, 16);
+            
+            ctx.fillStyle = dimColor;
+            ctx.fillText(txt, midX, centerY + 5);
+
+            currentX += drawW;
+        });
+    }
+
+    function drawLinearDimension(ctx, x1, y1, x2, y2, text, offset, isHorizontal) {
+        ctx.strokeStyle = '#dc2626'; 
+        ctx.fillStyle = '#dc2626';
+        ctx.lineWidth = 1;
+        ctx.font = "14px Sarabun";
+        ctx.textAlign = "center";
+
+        const gap = 3; 
+        const extend = 7; 
+
+        if (isHorizontal) {
+            const dimY = y1 + offset;
+            
+            // Left Ext
+            ctx.beginPath();
+            ctx.moveTo(x1, y1 + gap);
+            ctx.lineTo(x1, dimY + extend);
+            ctx.stroke();
+
+            // Right Ext
+            ctx.beginPath();
+            ctx.moveTo(x2, y2 + gap);
+            ctx.lineTo(x2, dimY + extend);
+            ctx.stroke();
+
+            // Dimension Line
+            drawArrowLine(ctx, x1, dimY, x2, dimY);
+
+            // Text
+            ctx.fillText(text, (x1 + x2) / 2, dimY - 5);
+        }
+    }
+
+    function drawArrowLine(ctx, x1, y1, x2, y2) {
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+
+        drawArrowhead(ctx, x1, y1, Math.atan2(y2 - y1, x2 - x1)); 
+        drawArrowhead(ctx, x2, y2, Math.atan2(y1 - y2, x1 - x2)); 
+    }
+
+    function drawArrowhead(ctx, x, y, angle) {
+        const headlen = 8; 
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(headlen * Math.cos(Math.PI / 6), headlen * Math.sin(Math.PI / 6));
+        ctx.lineTo(headlen, 0); 
+        ctx.lineTo(headlen * Math.cos(-Math.PI / 6), headlen * Math.sin(-Math.PI / 6));
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    }
+</script>
+
+</body>
+</html>

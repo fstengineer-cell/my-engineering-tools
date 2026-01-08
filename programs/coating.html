@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineering Tools: Pre-Coating Calculator</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 1. CORE THEME --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Prompt', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+            color: #2d3748;
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 1100px;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .card-container {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            padding: 20px;
+            text-align: center;
+            color: white;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        }
+
+        header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 10px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+
+        .content {
+            padding: 25px;
+        }
+
+        /* --- 2. LAYOUT GRID --- */
+        .input-grid-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr; /* ซ้าย 1 ส่วน : ขวา 1.5 ส่วน */
+            gap: 25px;
+            margin-bottom: 20px;
+            align-items: stretch;
+        }
+
+        @media (max-width: 800px) {
+            .input-grid-wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- 3. INPUTS & FORMS --- */
+        .form-section-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0; 
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-group { margin-bottom: 0; width: 100%; }
+
+        label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #2d3748;
+            font-size: 0.95rem;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: 'Inter', 'Prompt', sans-serif;
+            transition: all 0.2s ease;
+            background: #fff;
+        }
+
+        /* Styling for the prominent dropdown */
+        #coatingSelect {
+            padding: 14px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e40af;
+            background-color: #eff6ff;
+            border: 2px solid #60a5fa;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        #coatingSelect:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .detail-work-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 15px;
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #edf2f7;
+        }
+
+        .tol-stack { display: flex; flex-direction: column; gap: 10px; }
+        .tol-input-group label { font-size: 0.8rem; margin-bottom: 2px; color: #718096; }
+        .tol-input-group input { padding: 8px 10px; font-size: 0.95rem; }
+
+        /* --- 4. BUTTONS --- */
+        .btn-action {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.1s, filter 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Prompt', sans-serif;
+        }
+        .btn-action:hover { transform: translateY(-1px); filter: brightness(0.95); }
+        .btn-reset { background: #fee2e2; color: #991b1b; }
+        .btn-export { background: #dcfce7; color: #166534; }
+        .btn-import { background: #dbeafe; color: #1e40af; }
+        
+        .btn-save {
+            width: 100%;
+            padding: 12px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        .btn-save:hover { background: #1d4ed8; }
+
+        .btn-delete {
+            font-size: 0.8rem;
+            color: #e53e3e;
+            background: rgba(229, 62, 62, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-delete:hover { background: rgba(229, 62, 62, 0.2); }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: #718096;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: underline;
+            margin-top: 15px;
+            width: 100%;
+        }
+        .toggle-btn:hover { color: #2563eb; }
+
+        /* --- 5. STATUS BAR --- */
+        .status-bar {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1rem;
+            display: none;
+            line-height: 1.5;
+            animation: slideUp 0.3s ease-out;
+        }
+        .status-ok { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .status-wide { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; } 
+        .status-warn { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+        .status-err { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+        /* --- 6. RESULTS GRID --- */
+        .results-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .results-wrapper { grid-template-columns: 1fr; }
+        }
+
+        .result-column {
+            background: #fff;
+            border-radius: 15px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .result-column.faded { opacity: 0.4; pointer-events: none; filter: grayscale(100%); }
+
+        .res-header {
+            padding: 10px;
+            text-align: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+        .res-normal { background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); }
+        .res-precision { background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); }
+
+        .res-content { padding: 15px; }
+
+        .result-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .result-card:last-child { margin-bottom: 0; }
+
+        .res-title {
+            font-size: 0.8rem;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .drawing-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2d3748;
+            gap: 10px;
+        }
+        .drawing-dia { font-size: 2rem; font-weight: 700; line-height: 1; }
+        .drawing-tol-stack { display: flex; flex-direction: column; font-size: 1rem; line-height: 1.1; font-weight: 600; text-align: left; }
+        .val-plus { color: #2d3748; }
+        .val-minus { color: #2d3748; }
+
+        .col-note {
+            font-size: 0.75rem;
+            text-align: center;
+            color: #718096;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        /* --- 7. ADD FORM & OTHER --- */
+        #addCoatingForm {
+            display: none;
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 15px;
+            border: 1px solid #cbd5e1;
+        }
+        .form-row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .count-badge { background: #ebf8ff; color: #2b6cb0; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; margin-left: 8px;}
+        .last-update { font-size: 0.75rem; color: #a0aec0; margin-right: auto; align-self: center;}
+        
+        .coating-info { 
+            font-size: 0.85rem; 
+            color: #4a5568; 
+            margin-top: 15px; 
+            font-weight: 500; 
+            text-align: left; /* เปลี่ยนเป็นชิดซ้ายให้อ่านง่ายขึ้นเมื่อมี 2 บรรทัด */
+            padding: 12px; 
+            background: #f7fafc; 
+            border: 1px dashed #cbd5e1;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+
+        .diagram-container {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            border: 1px dashed #cbd5e1;
+        }
+        .diagram-container img { max-width: 100%; height: auto; max-height: 150px; object-fit: contain; }
+
+    </style>
+</head>
+<body>
+
+<div class="main-wrapper">
+    <div class="card-container">
+        <header>
+            <h2>🛡️ Pre-Coating Calculator</h2>
+        </header>
+        
+        <div class="header-controls">
+            <span class="last-update" id="lastUpdateDisplay">Update: -</span>
+            <button class="btn-action btn-reset" onclick="resetDefaults()">↻ Reset</button>
+            <button class="btn-action btn-export" onclick="exportData()">⬇ Export</button>
+            <button class="btn-action btn-import" onclick="document.getElementById('fileInput').click()">⬆ Import</button>
+            <input type="file" id="fileInput" style="display: none" accept=".json" onchange="importData(this)">
+        </div>
+
+        <div class="content">
+            
+            <div class="input-grid-wrapper">
+                
+                <div class="form-section-card">
+                    <div class="form-group">
+                        <label>
+                            <div>เลือกสาร Coating <span class="count-badge" id="countDisplay">0</span></div>
+                            <button id="btnDelete" class="btn-delete" onclick="deleteCurrentCoating()">ลบ</button>
+                        </label>
+                        <select id="coatingSelect" onchange="handleCoatingChange()">
+                            </select>
+                        <div id="coatingRangeDisplay" class="coating-info">
+                            </div>
+                    </div>
+                </div>
+
+                <div class="form-section-card">
+                    <div class="form-group">
+                        <label>Dimensions & Tolerances</label>
+                        <div class="detail-work-grid">
+                            <div class="dia-container">
+                                <label>Target Dia (mm)</label>
+                                <input type="number" id="baseDia" step="0.001" placeholder="10.00" oninput="calculate()" style="height: 50px; font-size: 1.2rem; font-weight:bold;">
+                            </div>
+                            <div class="tol-stack">
+                                <div class="tol-input-group">
+                                    <label>Max</label>
+                                    <input type="number" id="tolUpper" step="0.001" placeholder="0.020" oninput="calculate()">
+                                </div>
+                                <div class="tol-input-group">
+                                    <label>Min</label>
+                                    <input type="number" id="tolLower" step="0.001" placeholder="-0.010" oninput="calculate()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div id="statusDisplay" class="status-bar">รอข้อมูล...</div>
+
+            <div class="results-wrapper">
+                <div class="result-column" id="colNormal">
+                    <div class="res-header res-normal">Normal Type</div>
+                    <div class="res-content">
+                        <div id="normalNote" class="col-note"></div>
+                        
+                        <div class="result-card">
+                            <div class="res-title">Target: Min (Tol -)</div>
+                            <div class="drawing-display">
+                                <div class="drawing-dia" id="norm_neg_base">-</div>
+                                <div class="drawing-tol-stack">
+                                    <div class="val-plus" id="norm_neg_top">-</div>
+                                    <div class="val-minus" id="norm_neg_bot">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="result-card">
+                            <div class="res-title">Target: Max (Tol +)</div>
+                            <div class="drawing-display">
+                                <div class="drawing-dia" id="norm_pos_base">-</div>
+                                <div class="drawing-tol-stack">
+                                    <div class="val-plus" id="norm_pos_top">-</div>
+                                    <div class="val-minus" id="norm_pos_bot">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-column" id="colPrecision">
+                    <div class="res-header res-precision">Precision Type</div>
+                    <div class="res-content">
+                        <div class="col-note">Subtract coating thickness</div>
+
+                        <div class="result-card">
+                            <div class="res-title">Target: Min (Tol -)</div>
+                            <div class="drawing-display">
+                                <div class="drawing-dia" id="prec_neg_base">-</div>
+                                <div class="drawing-tol-stack">
+                                    <div class="val-plus" id="prec_neg_top">-</div>
+                                    <div class="val-minus" id="prec_neg_bot">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="result-card">
+                            <div class="res-title">Target: Max (Tol +)</div>
+                            <div class="drawing-display">
+                                <div class="drawing-dia" id="prec_pos_base">-</div>
+                                <div class="drawing-tol-stack">
+                                    <div class="val-plus" id="prec_pos_top">-</div>
+                                    <div class="val-minus" id="prec_pos_bot">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="diagram-container">
+                 
+
+[Ex. coating thickness]
+
+                <img src="data:image/png;base64,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" alt="Coating Diagram" onerror="this.style.display='none'">
+            </div>
+
+            <button class="toggle-btn" onclick="toggleAddForm()">+ เพิ่มสาร Coating ใหม่ / Add New</button>
+            
+            <div id="addCoatingForm">
+                <h4 style="margin-bottom:15px; color:#2d3748;">เพิ่มข้อมูลสารใหม่</h4>
+                <div class="form-row">
+                    <input type="text" id="new_name" placeholder="ชื่อสาร (Name)" style="flex:2;">
+                </div>
+                <label style="font-size:0.8rem; margin-top:10px;">Normal Range (Min - Max)</label>
+                <div class="form-row">
+                    <input type="number" id="new_n_min" step="0.001" placeholder="Min">
+                    <input type="number" id="new_n_max" step="0.001" placeholder="Max">
+                </div>
+                <label style="font-size:0.8rem; margin-top:10px;">Precision Range (Min - Max)</label>
+                <div class="form-row">
+                    <input type="number" id="new_p_min" step="0.001" placeholder="Min">
+                    <input type="number" id="new_p_max" step="0.001" placeholder="Max">
+                </div>
+                <button class="btn-save" onclick="addNewCoating()">บันทึก (Save)</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- ORIGINAL LOGIC (UNCHANGED) ---
+    const defaultCoatings = [
+        { name: "TiAlN", n: [0.004, 0.008], p: [0.002, 0.004] },
+        { name: "Tin", n: [0.004, 0.008], p: [0.002, 0.004] },
+        { name: "TiCN", n: [0.004, 0.008], p: [0.002, 0.004] },
+        { name: "AlCrN", n: [0.004, 0.008], p: [0.002, 0.004] },
+        { name: "CrN", n: [0.004, 0.008], p: [0.002, 0.004] },
+        { name: "ACX", n: [0.004, 0.008], p: [0.002, 0.004] },
+        { name: "DLC", n: [0.001, 0.003], p: [0.001, 0.003] },
+        { name: "AC-DC Fine", n: [0.001, 0.003], p: [0.001, 0.003] },
+        { name: "Alcrona Evo", n: [0.006, 0.010], p: [0.002, 0.004] },
+        { name: "Alcrona Evo AV1", n: [0.002, 0.004], p: [0.002, 0.004] },
+        { name: "Alcrona Evo AV3", n: [0.006, 0.010], p: [0.006, 0.010] },
+        { name: "Durana", n: [0.002, 0.008], p: [0.002, 0.008] },
+        { name: "Latuma", n: [0.002, 0.008], p: [0.002, 0.008] },
+        { name: "Latuma LM1", n: [0.002, 0.004], p: [0.002, 0.004] },
+        { name: "Latuma LM3", n: [0.006, 0.010], p: [0.006, 0.010] },
+        { name: "Electroless Nickel", n: [0.006, 0.010], p: [0.006, 0.010] }
+    ];
+
+    let coatings = [];
+    let lastUpdateDate = null; 
+
+    function init() {
+        const savedData = localStorage.getItem('myCoatings_v6_data');
+        const savedTime = localStorage.getItem('myCoatings_v6_time');
+        if (savedData) {
+            coatings = JSON.parse(savedData);
+        } else {
+            const v5 = localStorage.getItem('myCoatings_v5');
+            coatings = v5 ? JSON.parse(v5) : JSON.parse(JSON.stringify(defaultCoatings));
+        }
+        lastUpdateDate = savedTime || new Date().toISOString();
+        renderDropdown();
+        handleCoatingChange();
+        updateMetaDisplay();
+    }
+
+    function saveToSystem() {
+        lastUpdateDate = new Date().toISOString();
+        localStorage.setItem('myCoatings_v6_data', JSON.stringify(coatings));
+        localStorage.setItem('myCoatings_v6_time', lastUpdateDate);
+        updateMetaDisplay();
+    }
+
+    function updateMetaDisplay() {
+        document.getElementById('countDisplay').innerText = `${coatings.length}`;
+        if(lastUpdateDate) {
+            const dateObj = new Date(lastUpdateDate);
+            const dateStr = dateObj.toLocaleDateString('th-TH', { 
+                day: 'numeric', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+            document.getElementById('lastUpdateDisplay').innerText = `Update: ${dateStr}`;
+        }
+    }
+    
+    function exportData() {
+        const exportObj = { timestamp: lastUpdateDate, data: coatings };
+        const dataStr = JSON.stringify(exportObj, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const dateStr = new Date().toISOString().slice(0,10);
+        a.download = `CoatingData_${dateStr}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function importData(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const jsonContent = JSON.parse(e.target.result);
+                if (Array.isArray(jsonContent)) {
+                    coatings = jsonContent;
+                    saveToSystem();
+                    alert("นำเข้าข้อมูลแบบเก่าสำเร็จ");
+                } else if (jsonContent.data && Array.isArray(jsonContent.data)) {
+                    coatings = jsonContent.data;
+                    lastUpdateDate = jsonContent.timestamp || new Date().toISOString();
+                    localStorage.setItem('myCoatings_v6_data', JSON.stringify(coatings));
+                    localStorage.setItem('myCoatings_v6_time', lastUpdateDate);
+                    updateMetaDisplay();
+                    renderDropdown();
+                    if(coatings.length > 0) document.getElementById('coatingSelect').value = 0;
+                    handleCoatingChange();
+                    alert("นำเข้าข้อมูลสำเร็จ");
+                } else {
+                    alert("รูปแบบไฟล์ไม่ถูกต้อง");
+                }
+            } catch (err) {
+                alert("เกิดข้อผิดพลาดในการอ่านไฟล์");
+            }
+            renderDropdown();
+            handleCoatingChange();
+        };
+        reader.readAsText(file);
+        input.value = ''; 
+    }
+
+    function resetDefaults() {
+        if(confirm("คุณต้องการล้างข้อมูลทั้งหมดและกลับไปใช้ค่าเริ่มต้นโรงงานหรือไม่?")) {
+            coatings = JSON.parse(JSON.stringify(defaultCoatings));
+            saveToSystem(); 
+            renderDropdown();
+            document.getElementById('coatingSelect').value = 13; 
+            handleCoatingChange();
+        }
+    }
+
+    function renderDropdown() {
+        const select = document.getElementById('coatingSelect');
+        const currentVal = select.value; 
+        select.innerHTML = ''; 
+        if (coatings.length === 0) {
+            let option = document.createElement("option");
+            option.text = "-- ไม่มีข้อมูล --";
+            select.appendChild(option);
+            updateMetaDisplay();
+            return;
+        }
+        coatings.forEach((c, index) => {
+            let option = document.createElement("option");
+            option.value = index;
+            option.text = c.name; 
+            if(c.name === "Latuma LM1" && !currentVal) option.selected = true;
+            select.appendChild(option);
+        });
+        if(currentVal && currentVal < coatings.length) {
+            select.value = currentVal;
+        } else if (coatings.length > 0 && !select.value) {
+             select.value = 0;
+        }
+        updateMetaDisplay();
+    }
+
+    function handleCoatingChange() {
+        const btnDelete = document.getElementById('btnDelete');
+        if (coatings.length === 0) {
+            btnDelete.style.display = 'none';
+            document.getElementById('coatingRangeDisplay').innerText = "-";
+            clearResults();
+            return;
+        } else {
+            btnDelete.style.display = 'inline-block';
+        }
+        calculate();
+    }
+
+    function toggleAddForm() {
+        const form = document.getElementById('addCoatingForm');
+        form.style.display = form.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function addNewCoating() {
+        const name = document.getElementById('new_name').value;
+        const n_min = parseFloat(document.getElementById('new_n_min').value);
+        const n_max = parseFloat(document.getElementById('new_n_max').value);
+        const p_min = parseFloat(document.getElementById('new_p_min').value);
+        const p_max = parseFloat(document.getElementById('new_p_max').value);
+        if (!name || isNaN(n_min) || isNaN(n_max) || isNaN(p_min) || isNaN(p_max)) {
+            alert("กรุณากรอกข้อมูลให้ครบทุกช่อง");
+            return;
+        }
+        const newCoating = { name: name, n: [n_min, n_max], p: [p_min, p_max] };
+        coatings.push(newCoating);
+        saveToSystem(); 
+        renderDropdown();
+        document.getElementById('coatingSelect').value = coatings.length - 1;
+        handleCoatingChange();
+        document.getElementById('addCoatingForm').style.display = 'none';
+        document.getElementById('new_name').value = '';
+        document.getElementById('new_n_min').value = '';
+        document.getElementById('new_n_max').value = '';
+        document.getElementById('new_p_min').value = '';
+        document.getElementById('new_p_max').value = '';
+    }
+
+    function deleteCurrentCoating() {
+        if (coatings.length === 0) return;
+        const idx = parseInt(document.getElementById('coatingSelect').value);
+        const name = coatings[idx].name;
+        if(confirm(`ยืนยันการลบ "${name}" หรือไม่?`)) {
+            coatings.splice(idx, 1);
+            saveToSystem(); 
+            renderDropdown();
+            const newIdx = idx > 0 ? idx - 1 : 0;
+            if (coatings.length > 0) document.getElementById('coatingSelect').value = newIdx;
+            handleCoatingChange();
+        }
+    }
+
+    function formatDisplay(num, forcePlus = false) {
+        if (isNaN(num)) return "-";
+        let val = Math.round(num * 1000) / 1000;
+        let str = val.toFixed(3);
+        if (Math.abs(val) < 0.0005) return "0";
+        if (forcePlus && val > 0) return "+" + str;
+        return str;
+    }
+
+    function clearResults() {
+        const ids = ['norm_neg_base','norm_neg_top','norm_neg_bot','norm_pos_base','norm_pos_top','norm_pos_bot',
+                     'prec_neg_base','prec_neg_top','prec_neg_bot','prec_pos_base','prec_pos_top','prec_pos_bot'];
+        ids.forEach(id => document.getElementById(id).innerText = "-");
+        document.getElementById('statusDisplay').style.display = 'none';
+    }
+
+    function calculate() {
+        const baseDiaStr = document.getElementById('baseDia').value;
+        const tolUpperStr = document.getElementById('tolUpper').value;
+        const tolLowerStr = document.getElementById('tolLower').value;
+        
+        if (baseDiaStr === "" || tolUpperStr === "" || tolLowerStr === "") {
+            clearResults();
+            document.getElementById('statusDisplay').innerHTML = "รอข้อมูล...";
+            document.getElementById('statusDisplay').className = 'status-bar';
+            document.getElementById('statusDisplay').style.display = 'block';
+            return;
+        }
+
+        if (coatings.length === 0) return;
+        const coatingIdx = document.getElementById('coatingSelect').value;
+        const coating = coatings[coatingIdx];
+
+        const baseDia = parseFloat(baseDiaStr);
+        const tolUpper = parseFloat(tolUpperStr);
+        const tolLower = parseFloat(tolLowerStr);
+        
+        // --- LOGIC ---
+        let tolRange = Math.round((tolUpper - tolLower) * 1000) / 1000;
+        
+        const statusDiv = document.getElementById('statusDisplay');
+        const colNormal = document.getElementById('colNormal');
+        const colPrecision = document.getElementById('colPrecision');
+        const normalNote = document.getElementById('normalNote');
+
+        // Reset UI
+        statusDiv.className = 'status-bar';
+        statusDiv.style.display = 'block';
+        colNormal.classList.remove('faded');
+        colPrecision.classList.remove('faded');
+        normalNote.innerText = "";
+        
+        let effectiveTolUpper = tolUpper; 
+
+        // 1. Wide Tolerance Check (Range >= 0.05) - USE PURPLE STATUS
+        if (tolRange >= 0.05) {
+            effectiveTolUpper = tolUpper - 0.01;
+
+            statusDiv.classList.add('status-wide'); // Changed to Purple
+            statusDiv.innerHTML = `สถานะ: Tolerance กว้าง (${tolRange.toFixed(3)})<br><span style="font-size:12px; font-weight:400;">ใช้ค่า Safety Margin -0.01 ที่ Max Tolerance</span>`;
+            
+            // Fade Precision Column
+            colPrecision.classList.add('faded');
+        } 
+        else {
+            // 2. Standard Logic Checks (for range < 0.05) - USE GREEN STATUS
+            if (tolRange >= 0.007) {
+                statusDiv.classList.add('status-ok'); // Standard Green
+                statusDiv.innerHTML = `สถานะการผลิต: สามารถผลิตได้ปกติ (Capable) <br><span style="font-size:12px; font-weight:400;">Tol Range: ${tolRange.toFixed(3)}</span>`;
+            } else if (tolRange >= 0.005) {
+                statusDiv.classList.add('status-warn');
+                statusDiv.innerHTML = `สถานะการผลิต: ต้องระวัง - แนะนำใช้ Precision (Caution) <br><span style="font-size:12px; font-weight:400;">Tol Range: ${tolRange.toFixed(3)}</span>`;
+                colNormal.classList.add('faded');
+            } else {
+                statusDiv.classList.add('status-err');
+                statusDiv.innerHTML = `สถานะการผลิต: ไม่สามารถผลิตได้ (Impossible) <br><span style="font-size:12px; font-weight:400;">Tol Range: ${tolRange.toFixed(3)}</span>`;
+                colNormal.classList.add('faded');
+                colPrecision.classList.add('faded');
+            }
+        }
+
+        // Updated Display Logic for 2 Lines with Colors
+        document.getElementById('coatingRangeDisplay').innerHTML = 
+            `<div style="margin-bottom:4px;"><span style="color:#16a34a; font-weight:bold;">Normal:</span> ${coating.n[0]} - ${coating.n[1]}</div>
+             <div><span style="color:#dc2626; font-weight:bold;">Precision:</span> ${coating.p[0]} - ${coating.p[1]}</div>`;
+
+        normalNote.innerText = "Subtract coating thickness";
+
+        // Normal Calculation
+        let n_targetMax = (baseDia + effectiveTolUpper) - coating.n[1];
+        let n_targetMin = (baseDia + tolLower) - coating.n[0];
+        let n_range = n_targetMax - n_targetMin;
+
+        document.getElementById('norm_neg_base').innerText = formatDisplay(n_targetMax);
+        document.getElementById('norm_neg_top').innerText = formatDisplay(0, true);
+        document.getElementById('norm_neg_bot').innerText = formatDisplay(-n_range);
+
+        document.getElementById('norm_pos_base').innerText = formatDisplay(n_targetMin);
+        document.getElementById('norm_pos_top').innerText = formatDisplay(n_range, true);
+        document.getElementById('norm_pos_bot').innerText = formatDisplay(0);
+
+        // Precision Calculation
+        let p_targetMax = (baseDia + effectiveTolUpper) - coating.p[1];
+        let p_targetMin = (baseDia + tolLower) - coating.p[0];
+        let p_range = p_targetMax - p_targetMin;
+
+        document.getElementById('prec_neg_base').innerText = formatDisplay(p_targetMax);
+        document.getElementById('prec_neg_top').innerText = formatDisplay(0, true);
+        document.getElementById('prec_neg_bot').innerText = formatDisplay(-p_range);
+
+        document.getElementById('prec_pos_base').innerText = formatDisplay(p_targetMin);
+        document.getElementById('prec_pos_top').innerText = formatDisplay(p_range, true);
+        document.getElementById('prec_pos_bot').innerText = formatDisplay(0);
+    }
+
+    init();
+</script>
+
+</body>
+</html>

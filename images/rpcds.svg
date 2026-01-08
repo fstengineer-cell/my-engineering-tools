@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="829.15pt" height="404.83pt" version="1.1" viewBox="0 0 829.15 404.83" xmlns="http://www.w3.org/2000/svg">
+ <defs>
+  <clipPath id="clip-0">
+   <path d="m0.17188 193h4.8281v2h-4.8281z"/>
+  </clipPath>
+  <clipPath id="clip-1">
+   <path d="m125 13.359h2v5.6406h-2z"/>
+  </clipPath>
+  <clipPath id="clip-2">
+   <path d="m0.14062 13h829.86v582h-829.86z"/>
+  </clipPath>
+ </defs>
+ <g stroke="#000" stroke-miterlimit="10" stroke-width=".12">
+  <path d="m125.92 201.49h-5.8203l5.8203 77.578zm-5.8203 0 5.8203 77.578h-5.8203z"/>
+  <path d="m129.81 201.49h-3.8984l3.8984 78.359zm-3.8984 0 3.8984 78.359h-3.8984z"/>
+  <path d="m123.01 279.85h2.9102v0.0273zm2.9102 0v0.0273l2.1875-0.0273z"/>
+ </g>
+ <g stroke="#000" stroke-miterlimit="10">
+  <path d="m128.1 279.85h-2.1875zm0 0h-2.1875 3.8984z" fill="none" stroke-width=".12"/>
+  <path d="m125.92 279.07h-5.8203l5.8203 0.78125zm-5.8203 0 5.8203 0.78125h-2.9102z" stroke-width=".12"/>
+  <path d="m129.81 171.76v108.09" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width=".84"/>
+ </g>
+ <g transform="translate(-.13449 -108.36)" clip-path="url(#clip-0)">
+  <path transform="matrix(0 -.03 -.03 0 842 595)" d="m13367 28060v-145.05" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="28"/>
+ </g>
+ <g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width=".84">
+  <path d="m13.416 85.626h9"/>
+  <path d="m31.416 85.626h45"/>
+  <path d="m85.416 85.626h9"/>
+  <path d="m103.42 85.626h45"/>
+  <path d="m157.42 85.626h9"/>
+  <path d="m175.42 85.626h45"/>
+  <path d="m229.42 85.626h9"/>
+  <path d="m247.42 85.626h45"/>
+  <path d="m301.42 85.626h9"/>
+  <path d="m319.42 85.626h25.141"/>
+  <path d="m125.92 304.27v-25.141"/>
+  <path d="m125.92 270.13v-9"/>
+  <path d="m125.92 252.13v-45"/>
+  <path d="m125.92 198.13v-9"/>
+  <path d="m125.92 180.13v-45"/>
+  <path d="m125.92 126.13v-9"/>
+  <path d="m125.92 108.13v-45"/>
+  <path d="m125.92 54.126v-9"/>
+  <path d="m125.92 36.126v-45"/>
+  <path d="m125.92-17.874v-9"/>
+  <path d="m125.92-35.874v-45"/>
+ </g>
+ <g transform="translate(-.13449 -108.36)" clip-path="url(#clip-1)">
+  <path transform="matrix(0 -.03 -.03 0 842 595)" d="m19217 23865h170.96" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="28"/>
+ </g>
+ <g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width=".84">
+  <path d="m123.01 279.85h6.8086"/>
+  <path d="m120.1 201.49v77.578"/>
+  <path d="m108.42 201.49v74.457"/>
+  <path d="m123.01 279.85-35.43-9.4805"/>
+  <path d="m14.377 197.17 76.59 76.559 4.6172 0.80859 4.6797 0.69141 4.6797 0.57031 4.6836 0.48047"/>
+  <path d="m108.42 201.49h21.391"/>
+  <path d="m129.81 171.76 132.36 48.18 3.2422-3.3594 3.1484-3.4219 3.0625-3.5078 2.9688-3.5703 2.8789-3.6602 2.7891-3.7227 2.7031-3.7773 2.6094-3.8711 2.5196-3.8984 2.4297-3.9609 2.3086-4.0508 2.2227-4.0781 2.1289-4.1406 2.0391-4.2032 1.9219-4.2266 1.7969-4.293-88.5-36.27"/>
+  <path d="m135.88 201.49h257.46"/>
+  <path d="m268.26 219.94h125.07"/>
+  <path d="m381.19 180.13v-21.387"/>
+  <path d="m381.19 241.3v119.58"/>
+  <path d="m386.92 180.13-5.7305 21.363v18.449"/>
+  <path d="m381.19 180.13v21.363l-5.6992-21.363"/>
+  <path d="m375.49 241.3 5.6992-21.359 5.7305 21.359"/>
+  <path d="m381.19 219.94v21.359"/>
+  <path d="m460.35 271.6h196.23v-48.602"/>
+  <path d="m656.58 222.98c0-41.262-33.449-74.715-74.715-74.715"/>
+  <path d="m581.89 148.27h-121.53v123.33"/>
+  <path d="m649.63 153.82-14.91 16.352 4.7383-21.633"/>
+  <path d="m634.72 170.17 9.8086-18.992"/>
+  <path d="m644.53 151.18 34.289-66.328h98.223"/>
+ </g>
+ <g transform="matrix(1 0 0 .6959 -.14063 -9.2333)" clip-path="url(#clip-2)">
+  <path transform="matrix(0 -.03 -.03 0 842 595)" d="m0 426.04h19389v27635" fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="4"/>
+ </g>
+</svg>

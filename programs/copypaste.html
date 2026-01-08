@@ -1,0 +1,1502 @@
+<html lang="th"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คลิกเพื่อคัดลอกข้อความ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --success-color: #10b981;
+            --success-hover: #059669;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --warning-color: #f59e0b;
+            --info-color: #06b6d4;
+            --light-gray: #f8fafc;
+            --medium-gray: #e2e8f0;
+            --dark-gray: #475569;
+            --white-color: #ffffff;
+            --font-family: 'Inter', sans-serif;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #334155;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* --- Main Layout & Tabs --- */
+        .app-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .tab-buttons {
+            display: flex;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            background: var(--white-color);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 16px 24px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: var(--light-gray);
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--dark-gray);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            outline: none;
+        }
+
+        .tab-button::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--primary-color);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .tab-button:hover {
+            background: var(--medium-gray);
+            color: var(--primary-color);
+        }
+
+        .tab-button.active {
+            background: var(--white-color);
+            color: var(--primary-color);
+        }
+
+        .tab-button.active::after {
+            transform: scaleX(1);
+        }
+
+        .tab-content {
+            padding: 24px;
+            background: var(--white-color);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            box-shadow: var(--box-shadow-lg);
+            margin-bottom: 20px;
+        }
+
+        /* --- Header Controls --- */
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 20px;
+            background: var(--white-color);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            flex-wrap: wrap;
+        }
+        
+        .search-container {
+            flex-grow: 1;
+            position: relative;
+            min-width: 250px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 48px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--medium-gray);
+            background: var(--light-gray);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-input::placeholder {
+            color: var(--dark-gray);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .header-controls button {
+            padding: 12px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--white-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .header-controls button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        
+        .btn-add { 
+            background: var(--success-color); 
+        }
+        .btn-add:hover:not(:disabled) { 
+            background: var(--success-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--box-shadow);
+        }
+        .btn-delete-mode { 
+            background: var(--primary-color); 
+        }
+        .btn-delete-mode:hover:not(:disabled) { 
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--box-shadow);
+        }
+        .btn-delete-selected { 
+            background: var(--danger-color); 
+        }
+        .btn-delete-selected:hover:not(:disabled) { 
+            background: var(--danger-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--box-shadow);
+        }
+        .btn-cancel-delete { 
+            background: var(--dark-gray); 
+        }
+        .btn-cancel-delete:hover:not(:disabled) { 
+            background: #64748b;
+            transform: translateY(-1px);
+            box-shadow: var(--box-shadow);
+        }
+        .btn-save-file { 
+            background: var(--gradient);
+            padding: 12px 24px;
+            border-radius: 8px;
+            margin: 0 auto;
+            display: block;
+        }
+        .btn-save-file:hover:not(:disabled) { 
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow-lg);
+        }
+
+        /* --- Stats Info --- */
+        .stats-info {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--light-gray) 0%, var(--medium-gray) 100%);
+            border-radius: 8px;
+            font-weight: 500;
+            color: var(--dark-gray);
+        }
+
+        /* --- Item Grid --- */
+        .item-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .copyable-text {
+            cursor: grab;
+            border: 1px solid var(--medium-gray);
+            padding: 20px;
+            background: var(--white-color);
+            border-radius: var(--border-radius);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            min-height: 70px;
+        }
+        .copyable-text:active { 
+            cursor: grabbing; 
+        }
+
+        .copyable-text.dragging { 
+            opacity: 0.8; 
+            transform: scale(0.98) rotate(2deg); 
+        }
+        .copyable-text.drag-over { 
+            border-color: var(--primary-color); 
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow-lg);
+        }
+
+        .copyable-text:not(.deleting-mode):hover {
+            border-color: var(--primary-color);
+            transform: translateY(-4px);
+            box-shadow: var(--box-shadow-lg);
+        }
+        
+        .copyable-text-content {
+            flex-grow: 1;
+            word-wrap: break-word;
+            font-size: 15px;
+            line-height: 1.5;
+            font-weight: 400;
+            /* ตัดข้อความถ้าแสดงผลยาวเกินไปในหน้า Grid แต่ Copy จะได้ครบ */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Item Actions (Edit Button) */
+        .item-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+        }
+        .copyable-text:hover .item-actions { 
+            opacity: 1; 
+        }
+        .btn-edit {
+            background: rgba(59, 130, 246, 0.1);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: var(--primary-color);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .btn-edit:hover { 
+            background: var(--primary-color);
+            color: var(--white-color);
+            transform: scale(1.1);
+        }
+
+        /* Delete Mode */
+        .copyable-text.deleting-mode {
+            padding-left: 16px;
+            border-color: var(--danger-color);
+            cursor: pointer;
+            background: #fef2f2;
+        }
+        .copyable-text.deleting-mode:hover { 
+            background: #fecaca;
+            transform: none;
+            box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2);
+        }
+        .delete-checkbox {
+            margin-right: 12px;
+            transform: scale(1.2);
+            accent-color: var(--danger-color);
+            width: 20px;
+            height: 20px;
+        }
+
+        /* --- Empty State --- */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--dark-gray);
+        }
+        .empty-state .icon { 
+            font-size: 64px; 
+            margin-bottom: 24px; 
+            color: var(--medium-gray);
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+        .empty-state h3 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0 0 8px;
+        }
+
+        /* --- Notification --- */
+        .notification {
+            display: none;
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--white-color);
+            padding: 16px 32px;
+            border-radius: 50px;
+            z-index: 1000;
+            box-shadow: var(--box-shadow-lg);
+            font-weight: 500;
+            animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .notification.success { 
+            background: linear-gradient(135deg, var(--success-color) 0%, var(--success-hover) 100%); 
+        }
+        .notification.error { 
+            background: linear-gradient(135deg, var(--danger-color) 0%, var(--danger-hover) 100%); 
+        }
+
+        @keyframes slideDown {
+            from { 
+                transform: translateX(-50%) translateY(-100px); 
+                opacity: 0; 
+            }
+            to { 
+                transform: translateX(-50%) translateY(0); 
+                opacity: 1; 
+            }
+        }
+        
+        /* --- Modal --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .modal-content {
+            background: var(--white-color);
+            padding: 32px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 600px; /* Increased max-width for better textarea experience */
+            box-shadow: var(--box-shadow-lg);
+            transform: scale(0.95);
+            animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes scaleIn {
+            to { transform: scale(1); }
+        }
+        .modal-content h2 { 
+            margin-top: 0; 
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+        .form-group { 
+            margin-bottom: 20px; 
+        }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 500; 
+            color: var(--dark-gray);
+        }
+        .form-group input, 
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 16px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 8px;
+            background: var(--light-gray);
+            transition: all 0.3s ease;
+            outline: none;
+            font-family: var(--font-family);
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+            line-height: 1.5;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .modal-actions {
+            text-align: right;
+            margin-top: 24px;
+        }
+        .modal-actions button {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-left: 12px;
+            transition: all 0.3s ease;
+        }
+        .btn-modal-save { 
+            background: var(--primary-color); 
+            color: var(--white-color); 
+        }
+        .btn-modal-save:hover { 
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+        .btn-modal-cancel { 
+            background: var(--medium-gray); 
+            color: var(--dark-gray);
+        }
+        .btn-modal-cancel:hover { 
+            background: var(--dark-gray);
+            color: var(--white-color);
+            transform: translateY(-1px);
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .header-controls { 
+                flex-direction: column; 
+                align-items: stretch; 
+            }
+            .button-group {
+                justify-content: center;
+            }
+            .item-container { 
+                grid-template-columns: 1fr; 
+                gap: 12px;
+            }
+            .tab-button {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+            .search-container {
+                min-width: auto;
+            }
+        }
+
+        /* Drag and Drop Feedback */
+        .copyable-text::before {
+            content: attr(data-drag-text);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            font-size: 12px;
+            color: var(--primary-color);
+            transition: opacity 0.3s ease;
+        }
+        .drag-over .copyable-text::before {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div class="tab-buttons">
+            <button class="tab-button" onclick="app.openTab('commands')">
+                <i class="fas fa-terminal"></i> คำสั่ง
+            </button>
+            <button class="tab-button active" onclick="app.openTab('emails')">
+                <i class="fas fa-envelope"></i> ส่ง Email
+            </button>
+        </div>
+
+        <div id="commands" class="tab-content hidden">
+            <div class="header-controls">
+                <div class="search-container">
+                    <i class="fas fa-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--dark-gray);"></i>
+                    <input type="search" id="searchCommands" class="search-input" placeholder="ค้นหาคำสั่ง...">
+                </div>
+                <div class="button-group">
+                    <button class="btn-add" onclick="app.openModal('add', 'commands')">
+                        <i class="fas fa-plus"></i> เพิ่มใหม่
+                    </button>
+                    <button id="deleteModeBtnCommands" class="btn-delete-mode" onclick="app.toggleDeleteMode('commands')">
+                        <i class="fas fa-trash"></i> ลบ
+                    </button>
+                    <button id="deleteSelectedBtnCommands" class="btn-delete-selected hidden" onclick="app.deleteSelected('commands')" disabled="">ลบที่เลือก</button>
+                    <button id="cancelDeleteBtnCommands" class="btn-cancel-delete hidden" onclick="app.cancelDeleteMode('commands')">ยกเลิก</button>
+                </div>
+            </div>
+            <div id="statsInfoCommands" class="stats-info">
+                <i class="fas fa-list"></i> จำนวนทั้งหมด: <span id="textCountCommands">19</span> รายการ
+            </div>
+            <div id="textContainer" class="item-container">
+        <div class="copyable-text" draggable="true" data-index="0" data-copy-text="เริ่มเขียน" title="คลิกเพื่อคัดลอก: เริ่มเขียน...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">เริ่มเขียน</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="1" data-copy-text="เริ่มแก้ไข" title="คลิกเพื่อคัดลอก: เริ่มแก้ไข...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">เริ่มแก้ไข</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="2" data-copy-text="เริ่มเขียนต่อ" title="คลิกเพื่อคัดลอก: เริ่มเขียนต่อ...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">เริ่มเขียนต่อ</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="3" data-copy-text="Pls. check" title="คลิกเพื่อคัดลอก: Pls. check...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Pls. check</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="4" data-copy-text="Register" title="คลิกเพื่อคัดลอก: Register...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Register</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="5" data-copy-text="Update" title="คลิกเพื่อคัดลอก: Update...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Update</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="6" data-copy-text="delete" title="คลิกเพื่อคัดลอก: delete...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">delete</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="7" data-copy-text="OK" title="คลิกเพื่อคัดลอก: OK...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">OK</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="8" data-copy-text="revise" title="คลิกเพื่อคัดลอก: revise...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">revise</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="9" data-copy-text="Update Drawing ให้เป็นปัจจุบัน" title="คลิกเพื่อคัดลอก: Update Drawing ให้เป็นปัจจุบัน...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Update Drawing ให้เป็นปัจจุบัน</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="10" data-copy-text="เพิ่ม File Auto cad" title="คลิกเพื่อคัดลอก: เพิ่ม File Auto cad...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">เพิ่ม File Auto cad</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="11" data-copy-text="เพิ่ม File Drawing Assy" title="คลิกเพื่อคัดลอก: เพิ่ม File Drawing Assy...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">เพิ่ม File Drawing Assy</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="12" data-copy-text="เพิ่ม File Drawing Fac." title="คลิกเพื่อคัดลอก: เพิ่ม File Drawing Fac....">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">เพิ่ม File Drawing Fac.</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="13" data-copy-text="เพิ่ม File Drawing Original" title="คลิกเพื่อคัดลอก: เพิ่ม File Drawing Original...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">เพิ่ม File Drawing Original</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="14" data-copy-text="ปรับ Scale" title="คลิกเพื่อคัดลอก: ปรับ Scale...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">ปรับ Scale</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="15" data-copy-text="ใส่ค่าไม่ครบ" title="คลิกเพื่อคัดลอก: ใส่ค่าไม่ครบ...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">ใส่ค่าไม่ครบ</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="16" data-copy-text="กำหนด Tolerance ผิด" title="คลิกเพื่อคัดลอก: กำหนด Tolerance ผิด...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">กำหนด Tolerance ผิด</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="17" data-copy-text="กรุณาแก้ไขใหม่" title="คลิกเพื่อคัดลอก: กรุณาแก้ไขใหม่...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">กรุณาแก้ไขใหม่</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="18" data-copy-text="รอคำตอบจากลูกค้า" title="คลิกเพื่อคัดลอก: รอคำตอบจากลูกค้า...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">รอคำตอบจากลูกค้า</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    </div>
+            <div id="emptyStateCommands" class="empty-state hidden">
+                <div class="icon">📝</div>
+                <h3>ยังไม่มีข้อความ</h3>
+                <p>คลิก "เพิ่มใหม่" เพื่อเริ่มต้น</p>
+            </div>
+        </div>
+
+        <div id="emails" class="tab-content">
+            <div class="header-controls">
+                <div class="search-container">
+                    <i class="fas fa-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--dark-gray);"></i>
+                    <input type="search" id="searchEmails" class="search-input" placeholder="ค้นหาอีเมล...">
+                </div>
+                <div class="button-group">
+                    <button class="btn-add" onclick="app.openModal('add', 'emails')">
+                        <i class="fas fa-plus"></i> เพิ่มใหม่
+                    </button>
+                    <button id="deleteModeBtnEmails" class="btn-delete-mode" onclick="app.toggleDeleteMode('emails')">
+                        <i class="fas fa-trash"></i> ลบ
+                    </button>
+                    <button id="deleteSelectedBtnEmails" class="btn-delete-selected hidden" onclick="app.deleteSelected('emails')" disabled="">ลบที่เลือก</button>
+                    <button id="cancelDeleteBtnEmails" class="btn-cancel-delete hidden" onclick="app.cancelDeleteMode('emails')">ยกเลิก</button>
+                </div>
+            </div>
+            <div id="statsInfoEmails" class="stats-info">
+                <i class="fas fa-list"></i> จำนวนทั้งหมด: <span id="textCountEmails">18</span> รายการ
+            </div>
+            <div id="emailContainer" class="item-container">
+        <div class="copyable-text" draggable="true" data-index="0" data-copy-text="Sent email to Chitphon" title="คลิกเพื่อคัดลอก: Sent email to Chitphon...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Chitphon</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="1" data-copy-text="Sent email to Jiraporn" title="คลิกเพื่อคัดลอก: Sent email to Jiraporn...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Jiraporn</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="2" data-copy-text="Sent email to Kamonrasa" title="คลิกเพื่อคัดลอก: Sent email to Kamonrasa...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Kamonrasa</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="3" data-copy-text="Sent email to Mevadee" title="คลิกเพื่อคัดลอก: Sent email to Mevadee...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Mevadee</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="4" data-copy-text="Sent email to Napasaporn" title="คลิกเพื่อคัดลอก: Sent email to Napasaporn...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Napasaporn</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="5" data-copy-text="Sent email to Patchada" title="คลิกเพื่อคัดลอก: Sent email to Patchada...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Patchada</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="6" data-copy-text="Sent email to Piyawat" title="คลิกเพื่อคัดลอก: Sent email to Piyawat...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Piyawat</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="7" data-copy-text="Sent email to Sirichai" title="คลิกเพื่อคัดลอก: Sent email to Sirichai...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Sirichai</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="8" data-copy-text="Sent email to Supaporn" title="คลิกเพื่อคัดลอก: Sent email to Supaporn...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Supaporn</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="9" data-copy-text="Sent email to Supinya" title="คลิกเพื่อคัดลอก: Sent email to Supinya...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Supinya</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="10" data-copy-text="Sent email to Soraya" title="คลิกเพื่อคัดลอก: Sent email to Soraya...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Soraya</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="11" data-copy-text="Sent email to Suthinun" title="คลิกเพื่อคัดลอก: Sent email to Suthinun...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Suthinun</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="12" data-copy-text="Sent email to Suvalee" title="คลิกเพื่อคัดลอก: Sent email to Suvalee...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Suvalee</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="13" data-copy-text="Sent email to Tawee" title="คลิกเพื่อคัดลอก: Sent email to Tawee...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Tawee</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="14" data-copy-text="Sent email to Thitirat" title="คลิกเพื่อคัดลอก: Sent email to Thitirat...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Thitirat</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="15" data-copy-text="Sent email to Wit" title="คลิกเพื่อคัดลอก: Sent email to Wit...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">Wit</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="16" data-copy-text="Drawing Update Submission as Requested
+
+Dear 
+
+I have sent the updated drawing and Request for drawing correction sheet as requested.
+Tool No. 
+Customer: 
+
+Please review the document and feel free to provide any feedback or request further information if necessary.
+Thank you very much for your attention.
+
+Best regards," title="คลิกเพื่อคัดลอก: Drawing Update Submission as Requested
+
+Dear 
+
+I h...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">email : Drawing Update</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    
+        <div class="copyable-text" draggable="true" data-index="17" data-copy-text="ส่งแบบ Drawing Update – Tool No. 
+เรียน 
+
+ผมได้ส่ง Drawing Update และใบขอแก้ไขแบบ ตามที่คุณร้องขอมาให้แล้วครับ
+Tool No. 
+Customer: 
+
+กรุณาตรวจสอบเอกสารดังกล่าว และแจ้งข้อเสนอแนะเพิ่มเติมหากมีข้อสงสัยหรือต้องการข้อมูลเพิ่ม
+
+ขอบคุณครับ" title="คลิกเพื่อคัดลอก: ส่งแบบ Drawing Update – Tool No. 
+เรียน 
+
+ผมได้ส่ง...">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content">อีเมล : Drawing Update</div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    </div>
+            <div id="emptyStateEmails" class="empty-state hidden">
+                <div class="icon">📧</div>
+                <h3>ยังไม่มีอีเมล</h3>
+                <p>คลิก "เพิ่มใหม่" เพื่อเริ่มต้น</p>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 24px;">
+             <button class="btn-save-file" onclick="app.downloadModifiedHtml()">
+                 <i class="fas fa-download"></i> 💾 Save file changes
+             </button>
+        </div>
+    </div>
+
+    <div id="notification" class="notification success" style="display: none;">แก้ไขรายการสำเร็จ <i class="fas fa-check"></i></div>
+
+    <div id="itemModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 id="modalTitle">แก้ไขรายการ</h2>
+            <div class="form-group">
+                <label for="modalDisplayText">ชื่อปุ่ม (ข้อความที่แสดงในกล่อง):</label>
+                <input type="text" id="modalDisplayText" required="" placeholder="เช่น Email: ส่งแบบ">
+            </div>
+            <div class="form-group">
+                <label for="modalCopyText">ข้อความที่จะคัดลอก (รองรับการขึ้นบรรทัดใหม่):</label>
+                <textarea id="modalCopyText" rows="6" placeholder="พิมพ์ข้อความที่ต้องการคัดลอกที่นี่..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button id="btnModalCancel" class="btn-modal-cancel">ยกเลิก</button>
+                <button id="btnModalSave" class="btn-modal-save">บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <template id="copyableItemTemplate">
+        <div class="copyable-text" draggable="true">
+            <input type="checkbox" class="delete-checkbox hidden" aria-label="เลือกเพื่อลบ">
+            <div class="copyable-text-content"></div>
+            <div class="item-actions">
+                <button class="btn-edit" title="แก้ไข"><i class="fas fa-edit"></i></button>
+            </div>
+        </div>
+    </template>
+
+    <script type="application/json" id="embeddedData">
+    {
+    "commands": [
+        {
+            "display": "เริ่มเขียน",
+            "copy": "เริ่มเขียน"
+        },
+        {
+            "display": "เริ่มแก้ไข",
+            "copy": "เริ่มแก้ไข"
+        },
+        {
+            "display": "เริ่มเขียนต่อ",
+            "copy": "เริ่มเขียนต่อ"
+        },
+        {
+            "display": "Pls. check",
+            "copy": "Pls. check"
+        },
+        {
+            "display": "Register",
+            "copy": "Register"
+        },
+        {
+            "display": "Update",
+            "copy": "Update"
+        },
+        {
+            "display": "delete",
+            "copy": "delete"
+        },
+        {
+            "display": "OK",
+            "copy": "OK"
+        },
+        {
+            "display": "revise",
+            "copy": "revise"
+        },
+        {
+            "display": "Update Drawing ให้เป็นปัจจุบัน",
+            "copy": "Update Drawing ให้เป็นปัจจุบัน"
+        },
+        {
+            "display": "เพิ่ม File Auto cad",
+            "copy": "เพิ่ม File Auto cad"
+        },
+        {
+            "display": "เพิ่ม File Drawing Assy",
+            "copy": "เพิ่ม File Drawing Assy"
+        },
+        {
+            "display": "เพิ่ม File Drawing Fac.",
+            "copy": "เพิ่ม File Drawing Fac."
+        },
+        {
+            "display": "เพิ่ม File Drawing Original",
+            "copy": "เพิ่ม File Drawing Original"
+        },
+        {
+            "display": "ปรับ Scale",
+            "copy": "ปรับ Scale"
+        },
+        {
+            "display": "ใส่ค่าไม่ครบ",
+            "copy": "ใส่ค่าไม่ครบ"
+        },
+        {
+            "display": "กำหนด Tolerance ผิด",
+            "copy": "กำหนด Tolerance ผิด"
+        },
+        {
+            "display": "กรุณาแก้ไขใหม่",
+            "copy": "กรุณาแก้ไขใหม่"
+        },
+        {
+            "display": "รอคำตอบจากลูกค้า",
+            "copy": "รอคำตอบจากลูกค้า"
+        }
+    ],
+    "emails": [
+        {
+            "display": "Chitphon",
+            "copy": "Sent email to Chitphon"
+        },
+        {
+            "display": "Jiraporn",
+            "copy": "Sent email to Jiraporn"
+        },
+        {
+            "display": "Kamonrasa",
+            "copy": "Sent email to Kamonrasa"
+        },
+        {
+            "display": "Mevadee",
+            "copy": "Sent email to Mevadee"
+        },
+        {
+            "display": "Napasaporn",
+            "copy": "Sent email to Napasaporn"
+        },
+        {
+            "display": "Patchada",
+            "copy": "Sent email to Patchada"
+        },
+        {
+            "display": "Piyawat",
+            "copy": "Sent email to Piyawat"
+        },
+        {
+            "display": "Sirichai",
+            "copy": "Sent email to Sirichai"
+        },
+        {
+            "display": "Supaporn",
+            "copy": "Sent email to Supaporn"
+        },
+        {
+            "display": "Supinya",
+            "copy": "Sent email to Supinya"
+        },
+        {
+            "display": "Soraya",
+            "copy": "Sent email to Soraya"
+        },
+        {
+            "display": "Suthinun",
+            "copy": "Sent email to Suthinun"
+        },
+        {
+            "display": "Suvalee",
+            "copy": "Sent email to Suvalee"
+        },
+        {
+            "display": "Tawee",
+            "copy": "Sent email to Tawee"
+        },
+        {
+            "display": "Thitirat",
+            "copy": "Sent email to Thitirat"
+        },
+        {
+            "display": "Wit",
+            "copy": "Sent email to Wit"
+        },
+        {
+            "display": "email : Drawing Update",
+            "copy": "Drawing Update Submission as Requested\n\nDear \n\nI have sent the updated drawing and Request for drawing correction sheet as requested.\nTool No. \nCustomer: \n\nPlease review the document and feel free to provide any feedback or request further information if necessary.\nThank you very much for your attention.\n\nBest regards,"
+        },
+        {
+            "display": "อีเมล : Drawing Update",
+            "copy": "ส่งแบบ Drawing Update – Tool No. \nเรียน \n\nผมได้ส่ง Drawing Update และใบขอแก้ไขแบบ ตามที่คุณร้องขอมาให้แล้วครับ\nTool No. \nCustomer: \n\nกรุณาตรวจสอบเอกสารดังกล่าว และแจ้งข้อเสนอแนะเพิ่มเติมหากมีข้อสงสัยหรือต้องการข้อมูลเพิ่ม\n\nขอบคุณครับ"
+        }
+    ]
+}
+    </script>
+    
+    <script>
+        const app = (function() {
+            // --- State Management ---
+            let dataStore = { commands: [], emails: [] };
+            let isDeleteMode = { commands: false, emails: false };
+            let activeTab = 'commands';
+            let modalState = { mode: 'add', tabId: '', index: -1 };
+
+            // --- DOM Elements ---
+            const elements = {
+                notification: document.getElementById('notification'),
+                itemModal: document.getElementById('itemModal'),
+                modalTitle: document.getElementById('modalTitle'),
+                modalDisplayText: document.getElementById('modalDisplayText'),
+                modalCopyText: document.getElementById('modalCopyText'),
+                btnModalSave: document.getElementById('btnModalSave'),
+                btnModalCancel: document.getElementById('btnModalCancel'),
+                itemTemplate: document.getElementById('copyableItemTemplate'),
+                tabs: {
+                    commands: {
+                        content: document.getElementById('commands'),
+                        container: document.getElementById('textContainer'),
+                        search: document.getElementById('searchCommands'),
+                        stats: document.getElementById('textCountCommands'),
+                        emptyState: document.getElementById('emptyStateCommands'),
+                        deleteModeBtn: document.getElementById('deleteModeBtnCommands'),
+                        deleteSelectedBtn: document.getElementById('deleteSelectedBtnCommands'),
+                        cancelDeleteBtn: document.getElementById('cancelDeleteBtnCommands'),
+                    },
+                    emails: {
+                        content: document.getElementById('emails'),
+                        container: document.getElementById('emailContainer'),
+                        search: document.getElementById('searchEmails'),
+                        stats: document.getElementById('textCountEmails'),
+                        emptyState: document.getElementById('emptyStateEmails'),
+                        deleteModeBtn: document.getElementById('deleteModeBtnEmails'),
+                        deleteSelectedBtn: document.getElementById('deleteSelectedBtnEmails'),
+                        cancelDeleteBtn: document.getElementById('cancelDeleteBtnEmails'),
+                    }
+                }
+            };
+
+            // --- Initialization ---
+            function init() {
+                loadDataFromEmbed();
+                setupEventListeners();
+                openTab('commands'); // Set initial tab
+            }
+
+            function setupEventListeners() {
+                // Tab and container listeners using event delegation
+                document.querySelector('.tab-buttons').addEventListener('click', handleTabClick);
+                Object.keys(elements.tabs).forEach(tabId => {
+                    elements.tabs[tabId].container.addEventListener('click', e => handleItemClick(e, tabId));
+                    elements.tabs[tabId].container.addEventListener('dragstart', e => handleDragStart(e, tabId));
+                    elements.tabs[tabId].container.addEventListener('dragover', e => handleDragOver(e, tabId));
+                    elements.tabs[tabId].container.addEventListener('drop', e => handleDrop(e, tabId));
+                    elements.tabs[tabId].container.addEventListener('dragleave', e => handleDragLeave(e, tabId));
+                    elements.tabs[tabId].search.addEventListener('input', e => handleSearch(e, tabId));
+                });
+                
+                // Modal listeners
+                elements.btnModalSave.addEventListener('click', handleModalSave);
+                elements.btnModalCancel.addEventListener('click', closeModal);
+                elements.itemModal.addEventListener('click', (e) => {
+                    if (e.target === elements.itemModal) closeModal();
+                });
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', handleKeyDown);
+                window.addEventListener('beforeunload', handleBeforeUnload);
+            }
+
+            // --- Data Handling ---
+            function loadDataFromEmbed() {
+                const dataElement = document.getElementById('embeddedData');
+                if (dataElement) {
+                    try {
+                        const data = JSON.parse(dataElement.textContent);
+                        dataStore.commands = data.commands || [];
+                        dataStore.emails = data.emails || [];
+                    } catch (e) {
+                        console.error("Error parsing embedded data:", e);
+                    }
+                }
+            }
+
+            // --- Rendering ---
+            function render(tabId) {
+                const tab = elements.tabs[tabId];
+                tab.container.innerHTML = '';
+                
+                const searchTerm = tab.search.value.toLowerCase();
+                const itemsToRender = dataStore[tabId].filter(item => 
+                    item.display.toLowerCase().includes(searchTerm) || 
+                    item.copy.toLowerCase().includes(searchTerm)
+                );
+
+                if (itemsToRender.length === 0) {
+                    tab.container.classList.add('hidden');
+                    tab.emptyState.classList.remove('hidden');
+                } else {
+                    tab.container.classList.remove('hidden');
+                    tab.emptyState.classList.add('hidden');
+                    itemsToRender.forEach(item => {
+                        const originalIndex = dataStore[tabId].indexOf(item);
+                        const newElement = createItemElement(item, originalIndex);
+                        tab.container.appendChild(newElement);
+                    });
+                }
+                updateStats(tabId);
+                updateDeleteUI(tabId);
+            }
+
+            function createItemElement(item, index) {
+                const clone = elements.itemTemplate.content.cloneNode(true);
+                const div = clone.querySelector('.copyable-text');
+                const content = clone.querySelector('.copyable-text-content');
+                const checkbox = clone.querySelector('.delete-checkbox');
+
+                div.dataset.index = index;
+                div.dataset.copyText = item.copy;
+                content.textContent = item.display;
+                div.title = `คลิกเพื่อคัดลอก: ${item.copy.substring(0, 50)}...`;
+                
+                if(isDeleteMode[activeTab]) {
+                    div.classList.add('deleting-mode');
+                    div.draggable = false;
+                    checkbox.classList.remove('hidden');
+                }
+                
+                return clone;
+            }
+
+            // --- Event Handlers ---
+            function handleTabClick(e) {
+                if(e.target.classList.contains('tab-button')) {
+                    const tabId = e.target.textContent.includes('คำสั่ง') ? 'commands' : 'emails';
+                    openTab(tabId);
+                }
+            }
+            
+            function handleItemClick(e, tabId) {
+                const item = e.target.closest('.copyable-text');
+                if (!item) return;
+
+                if (e.target.closest('.btn-edit')) {
+                    const index = parseInt(item.dataset.index);
+                    openModal('edit', tabId, index);
+                    return;
+                }
+                
+                if (isDeleteMode[tabId]) {
+                    const checkbox = item.querySelector('.delete-checkbox');
+                    checkbox.checked = !checkbox.checked;
+                    updateDeleteUI(tabId);
+                } else {
+                    copyToClipboard(item.dataset.copyText);
+                }
+            }
+
+            function handleDragStart(e, tabId) {
+                if (isDeleteMode[tabId]) { e.preventDefault(); return; }
+                const item = e.target.closest('.copyable-text');
+                if (item) {
+                    e.dataTransfer.setData('text/plain', item.dataset.index);
+                    item.classList.add('dragging');
+                }
+            }
+
+            function handleDragOver(e, tabId) {
+                if (isDeleteMode[tabId]) { e.preventDefault(); return; }
+                e.preventDefault();
+                const item = e.target.closest('.copyable-text');
+                if (item) item.classList.add('drag-over');
+            }
+
+            function handleDragLeave(e, tabId) {
+                const item = e.target.closest('.copyable-text');
+                if (item) item.classList.remove('drag-over');
+            }
+
+            function handleDrop(e, tabId) {
+                e.preventDefault();
+                const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                const toItem = e.target.closest('.copyable-text');
+                if (toItem) {
+                    const toIndex = parseInt(toItem.dataset.index);
+                    toItem.classList.remove('drag-over');
+                    
+                    const movedItem = dataStore[tabId].splice(fromIndex, 1)[0];
+                    dataStore[tabId].splice(toIndex, 0, movedItem);
+                    
+                    render(tabId);
+                    showNotification('เรียงลำดับใหม่สำเร็จ!', 'success');
+                }
+                document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+            }
+            
+            function handleSearch(e, tabId) {
+                render(tabId);
+            }
+
+            function handleKeyDown(e) {
+                if (e.key === 'Escape') {
+                    if (!elements.itemModal.classList.contains('hidden')) {
+                        closeModal();
+                    } else if (isDeleteMode[activeTab]) {
+                        cancelDeleteMode(activeTab);
+                    }
+                }
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    downloadModifiedHtml();
+                }
+            }
+
+            function handleBeforeUnload(e) {
+                const hasData = dataStore.commands.length > 0 || dataStore.emails.length > 0;
+                if (hasData) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            }
+            
+            // --- Core Functionality ---
+            function openTab(tabId) {
+                activeTab = tabId;
+                Object.keys(elements.tabs).forEach(id => {
+                    const isCurrent = id === tabId;
+                    elements.tabs[id].content.classList.toggle('hidden', !isCurrent);
+                });
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                     const isCurrent = (btn.innerText.includes('คำสั่ง') && tabId === 'commands') || (btn.innerText.includes('ส่ง Email') && tabId === 'emails');
+                     btn.classList.toggle('active', isCurrent);
+                });
+                render(tabId);
+            }
+            
+            function updateStats(tabId) {
+                elements.tabs[tabId].stats.textContent = dataStore[tabId].length;
+            }
+
+            async function copyToClipboard(text) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    showNotification('คัดลอกแล้ว! <i class="fas fa-check"></i>', 'success');
+                } catch (err) {
+                    showNotification('ไม่สามารถคัดลอกได้', 'error');
+                }
+            }
+
+            function toggleDeleteMode(tabId) {
+                if (dataStore[tabId].length === 0) {
+                    showNotification('ไม่มีรายการให้ลบ', 'error');
+                    return;
+                }
+                isDeleteMode[tabId] = !isDeleteMode[tabId];
+                render(tabId);
+            }
+
+            function cancelDeleteMode(tabId) {
+                isDeleteMode[tabId] = false;
+                render(tabId);
+            }
+            
+            function updateDeleteUI(tabId) {
+                const tab = elements.tabs[tabId];
+                tab.deleteModeBtn.classList.toggle('hidden', isDeleteMode[tabId]);
+                tab.deleteSelectedBtn.classList.toggle('hidden', !isDeleteMode[tabId]);
+                tab.cancelDeleteBtn.classList.toggle('hidden', !isDeleteMode[tabId]);
+
+                if (isDeleteMode[tabId]) {
+                    const selectedCount = tab.container.querySelectorAll('.delete-checkbox:checked').length;
+                    tab.deleteSelectedBtn.disabled = selectedCount === 0;
+                    tab.deleteSelectedBtn.innerHTML = `<i class="fas fa-trash"></i> ลบที่เลือก (${selectedCount})`;
+                }
+            }
+
+            function deleteSelected(tabId) {
+                const indicesToDelete = Array.from(elements.tabs[tabId].container.querySelectorAll('.delete-checkbox:checked'))
+                    .map(cb => parseInt(cb.closest('.copyable-text').dataset.index));
+                
+                if (indicesToDelete.length === 0) {
+                    showNotification('กรุณาเลือกรายการที่ต้องการลบ', 'error');
+                    return;
+                }
+
+                if (confirm(`ยืนยันการลบ ${indicesToDelete.length} รายการ?`)) {
+                    dataStore[tabId] = dataStore[tabId].filter((_, index) => !indicesToDelete.includes(index));
+                    isDeleteMode[tabId] = false;
+                    render(tabId);
+                    showNotification(`ลบ ${indicesToDelete.length} รายการแล้ว <i class="fas fa-check"></i>`, 'success');
+                }
+            }
+            
+            function downloadModifiedHtml() {
+                try {
+                    const newJsonData = JSON.stringify(dataStore, null, 4);
+                    const newHtml = document.documentElement.outerHTML.replace(
+                        /(<script type="application\/json" id="embeddedData">)[\s\S]*?(<\/script>)/,
+                        `$1\n    ${newJsonData}\n    $2`
+                    );
+
+                    const blob = new Blob([newHtml], { type: 'text/html;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    const timestamp = new Date().toISOString().slice(0, 19).replace(/[-:T]/g, "");
+                    a.download = `copyable_texts_${timestamp}.html`;
+                    a.href = url;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showNotification('บันทึกไฟล์สำเร็จ! <i class="fas fa-download"></i>', 'success');
+                } catch (error) {
+                    console.error('Error saving file:', error);
+                    showNotification('เกิดข้อผิดพลาดในการบันทึก', 'error');
+                }
+            }
+
+            // --- UI Helpers (Notifications, Modals) ---
+            function showNotification(message, type = 'success') {
+                elements.notification.innerHTML = message;
+                elements.notification.className = `notification ${type}`;
+                elements.notification.style.display = 'block';
+                setTimeout(() => { elements.notification.style.display = 'none'; }, 3000);
+            }
+            
+            function openModal(mode, tabId, index = -1) {
+                modalState = { mode, tabId, index };
+                if (mode === 'edit') {
+                    const item = dataStore[tabId][index];
+                    elements.modalTitle.textContent = 'แก้ไขรายการ';
+                    elements.modalDisplayText.value = item.display;
+                    elements.modalCopyText.value = item.copy;
+                } else {
+                    elements.modalTitle.textContent = 'เพิ่มรายการใหม่';
+                    elements.modalDisplayText.value = '';
+                    elements.modalCopyText.value = '';
+                }
+                elements.itemModal.classList.remove('hidden');
+                elements.modalDisplayText.focus();
+            }
+
+            function closeModal() {
+                elements.itemModal.classList.add('hidden');
+            }
+            
+            function handleModalSave() {
+                const { mode, tabId, index } = modalState;
+                const display = elements.modalDisplayText.value.trim();
+                const copy = elements.modalCopyText.value.trim() || display;
+                
+                if (!display) {
+                    showNotification('กรุณาป้อนชื่อปุ่ม (ข้อความที่แสดง)', 'error');
+                    return;
+                }
+
+                if (mode === 'add') {
+                    dataStore[tabId].push({ display, copy });
+                    showNotification('เพิ่มรายการใหม่สำเร็จ <i class="fas fa-check"></i>', 'success');
+                } else {
+                    dataStore[tabId][index] = { display, copy };
+                    showNotification('แก้ไขรายการสำเร็จ <i class="fas fa-check"></i>', 'success');
+                }
+                
+                render(tabId);
+                closeModal();
+            }
+
+            // --- Public API ---
+            // Expose only the functions that need to be called from the HTML (onclick attributes)
+            return {
+                init,
+                openTab,
+                toggleDeleteMode,
+                cancelDeleteMode,
+                deleteSelected,
+                downloadModifiedHtml,
+                openModal,
+            };
+        })();
+
+        // Start the application
+        document.addEventListener('DOMContentLoaded', app.init);
+    </script>
+
+</body></html>

@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineering Tools Pro: ISO Fit & Tool Calculator</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Prompt', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 40px 20px;
+        }
+
+        .main-wrapper {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1400px; /* ปรับลดขนาดลงเล็กน้อยเพื่อให้ 3 กล่องเรียงสวย */
+            width: 100%;
+            align-items: start;
+        }
+
+        .card-container {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        header {
+            padding: 20px;
+            text-align: center;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .header-iso { background: linear-gradient(135deg, #0bc5ea 0%, #00b5d8 100%); }
+        .header-tool { background: linear-gradient(135deg, #667eea 0%, #5a67d8 100%); }
+        .header-conv { background: linear-gradient(135deg, #ed64a6 0%, #9f7aea 100%); }
+
+        header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group { margin-bottom: 15px; }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #2d3748;
+            font-size: 0.9rem;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-family: 'Inter', 'Prompt', sans-serif;
+            transition: all 0.2s ease;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+
+        .detail-work-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 12px;
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 12px;
+            border: 2px solid #edf2f7;
+        }
+
+        .tol-stack { display: flex; flex-direction: column; gap: 8px; }
+        .tol-input-group label { font-size: 0.75rem; margin-bottom: 2px; color: #718096; }
+        .tol-input-group input { padding: 8px 10px; font-size: 0.95rem; }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s, filter 0.2s;
+            text-transform: uppercase;
+            font-family: 'Inter', 'Prompt', sans-serif;
+            margin-top: 5px;
+        }
+
+        button:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        button:active { transform: translateY(0); }
+
+        .btn-iso { background: linear-gradient(135deg, #0bc5ea 0%, #00b5d8 100%); box-shadow: 0 8px 15px rgba(11, 197, 234, 0.25); }
+        .btn-tool { background: linear-gradient(135deg, #667eea 0%, #5a67d8 100%); box-shadow: 0 8px 15px rgba(102, 126, 234, 0.25); }
+        .btn-conv { background: linear-gradient(135deg, #ed64a6 0%, #9f7aea 100%); box-shadow: 0 8px 15px rgba(237, 100, 166, 0.25); }
+
+        .btn-transfer {
+            background: transparent;
+            color: #718096;
+            border: 2px dashed #cbd5e0;
+            padding: 10px;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            box-shadow: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-transfer:hover {
+            border-color: #667eea;
+            color: #667eea;
+            background: #ebf4ff;
+        }
+
+        .result-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            display: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        }
+
+        .result-header {
+            color: #4a5568;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 2px dashed #e2e8f0;
+            padding-bottom: 8px;
+        }
+
+        .drawing-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            color: #2d3748;
+            margin-bottom: 10px;
+            transition: color 0.3s ease;
+        }
+
+        .drawing-dia { font-size: 2.2rem; line-height: 1; margin-right: 10px; font-weight: 700; }
+        .drawing-tol-stack { display: flex; flex-direction: column; justify-content: center; font-size: 1.1rem; line-height: 1.1; font-weight: 600; text-align: left;}
+
+        .text-green { color: #2f855a !important; }
+        .text-orange { color: #c05621 !important; }
+        .text-red { color: #c53030 !important; }
+
+        .range-status-bar {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #4a5568;
+            background: #f7fafc;
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        /* Animation Keyframe - การกะพริบตอน Transfer ข้อมูล */
+        .input-highlight { animation: flashInput 0.8s ease-out; }
+        @keyframes flashInput { 0% { background: #fff; } 50% { background: #e6fffa; border-color: #38b2ac; } 100% { background: #fff; } }
+
+        small { color: #a0aec0; font-size: 0.8rem; font-style: italic; margin-top: 5px; display: block; }
+
+        @media (max-width: 1200px) {
+            .main-wrapper { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .main-wrapper { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-wrapper">
+
+    <div class="card-container">
+        <header class="header-iso">
+            <h2>🔍 1. Standard ISO Fit</h2>
+        </header>
+        <div class="content">
+            <form id="isoForm">
+                <div class="form-group">
+                    <label>Diameter (mm)</label>
+                    <input type="number" id="isoDia" step="0.001" placeholder="เช่น 10" required>
+                </div>
+                <div class="form-group">
+                    <label>Tolerance Grade (Class)</label>
+                    <select id="isoGrade">
+                        <option value="" disabled selected>-- เลือกเกรด --</option>
+                        <optgroup label="Shaft (เพลา)">
+                            <option value="f6">f6</option><option value="f7">f7</option><option value="f8">f8</option>
+                            <option value="g5">g5</option><option value="g6">g6</option>
+                            <option value="h5">h5</option><option value="h6">h6</option><option value="h7">h7</option>
+                            <option value="h8">h8</option><option value="h9">h9</option>
+                        </optgroup>
+                        <optgroup label="Hole (รู)">
+                            <option value="F6">F6</option><option value="F7">F7</option><option value="F8">F8</option>
+                            <option value="G6">G6</option><option value="G7">G7</option>
+                            <option value="H6">H6</option><option value="H7">H7</option><option value="H8">H8</option>
+                            <option value="H9">H9</option><option value="H10">H10</option>
+                        </optgroup>
+                    </select>
+                </div>
+                <button type="submit" class="btn-iso">ค้นหา (Lookup)</button>
+            </form>
+
+            <div class="result-box" id="isoResultBox">
+                <div class="result-header">Standard Tolerance</div>
+                <div class="drawing-display">
+                    <div class="drawing-dia" id="isoResDia"></div>
+                    <div class="drawing-tol-stack">
+                        <div id="isoResUp"></div>
+                        <div id="isoResLo"></div>
+                    </div>
+                </div>
+                <button type="button" id="btnTransferToTool" class="btn-transfer">
+                    ➡️ ใช้ค่านี้คำนวณ Tool
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-container">
+        <header class="header-tool">
+            <h2>🔧 2. คำนวณ Tool Tolerance</h2>
+        </header>
+        <div class="content">
+            <form id="tolForm">
+                <div class="form-group">
+                    <label>Tool Type</label>
+                    <select id="toolType">
+                        <option value="drill">🔩 Drill (Factor 0.65)</option>
+                        <option value="reamer">⚙️ Reamer (Factor 0.75)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Detail Work (Input)</label>
+                    <div class="detail-work-grid">
+                        <div class="dia-container">
+                            <label>Diameter</label>
+                            <input type="number" id="diameter" step="0.001" required>
+                        </div>
+                        <div class="tol-stack">
+                            <div class="tol-input-group">
+                                <label>Max</label>
+                                <input type="number" id="tolUpper" step="0.001" required>
+                            </div>
+                            <div class="tol-input-group">
+                                <label>Min</label>
+                                <input type="number" id="tolLower" step="0.001" required>
+                            </div>
+                        </div>
+                    </div>
+                    <small>*รับค่าจากช่องซ้าย หรือพิมพ์เอง</small>
+                </div>
+                <button type="submit" class="btn-tool">คำนวณ Tool</button>
+            </form>
+
+            <div class="result-box" id="resultBoxLeft">
+                <div class="result-header">ผลลัพธ์ (Tool Tolerance)</div>
+                <div class="drawing-display" id="displayLeft">
+                    <div class="drawing-dia" id="resDiaLeft"></div>
+                    <div class="drawing-tol-stack">
+                        <div id="resUpLeft"></div>
+                        <div id="resLoLeft"></div>
+                    </div>
+                </div>
+                <div id="rangeStatusBar" class="range-status-bar"></div>
+                <button type="button" id="btnTransferToConv" class="btn-transfer" style="display:none;">
+                    ➡️ ใช้ค่านี้แปลง Tolerance
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-container">
+        <header class="header-conv">
+            <h2>🔄 3. แปลงค่า Tolerance</h2>
+        </header>
+        <div class="content">
+            <form id="convertForm">
+                <div class="form-group">
+                    <label>ค่าตั้งต้น (Original Value)</label>
+                    <div class="detail-work-grid">
+                        <div class="dia-container">
+                            <label>Diameter</label>
+                            <input type="number" id="c_diameter" step="0.001" required>
+                        </div>
+                        <div class="tol-stack">
+                            <div class="tol-input-group">
+                                <label>Max</label>
+                                <input type="number" id="c_tolUpper" step="0.001" required>
+                            </div>
+                            <div class="tol-input-group">
+                                <label>Min</label>
+                                <input type="number" id="c_tolLower" step="0.001" required>
+                            </div>
+                        </div>
+                    </div>
+                    <small>*รับค่าจากช่องกลาง หรือพิมพ์เอง</small>
+                </div>
+                <button type="submit" class="btn-conv">แปลงค่า (Convert)</button>
+            </form>
+
+            <div class="result-box" id="resultBoxRight">
+                <div class="result-header">⬇️ ต้องการ Tolerance ติดลบ (-)</div>
+                <div class="drawing-display">
+                    <div class="drawing-dia" id="resDiaMinus"></div>
+                    <div class="drawing-tol-stack">
+                        <div id="resUpMinus"></div>
+                        <div id="resLoMinus"></div>
+                    </div>
+                </div>
+                <div class="result-header" style="margin-top:15px; border-top:1px dashed #e2e8f0; padding-top:10px;">⬆️ ต้องการ Tolerance ติดบวก (+)</div>
+                <div class="drawing-display">
+                    <div class="drawing-dia" id="resDiaPlus"></div>
+                    <div class="drawing-tol-stack">
+                        <div id="resUpPlus"></div>
+                        <div id="resLoPlus"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const isoData = {
+        ranges: [3, 6, 10, 18, 30, 40, 50, 65, 80, 100, 120, 140, 160, 180, 200, 225, 250, 280, 315, 355, 400, 450, 500],
+        fits: {
+            'f6': [-6,-12, -10,-18, -13,-22, -16,-27, -20,-33, -25,-41, -25,-41, -30,-49, -30,-49, -36,-58, -36,-58, -43,-68, -43,-68, -43,-68, -50,-79, -50,-79, -50,-79, -56,-88, -56,-88, -62,-98, -62,-98, -62,-98, -68,-108, -68,-108],
+            'f7': [-6,-16, -10,-22, -13,-28, -16,-34, -20,-41, -25,-50, -25,-50, -30,-60, -30,-60, -36,-71, -36,-71, -43,-83, -43,-83, -43,-83, -50,-96, -50,-96, -50,-96, -56,-108, -56,-108, -62,-119, -62,-119, -62,-119, -68,-131, -68,-131],
+            'f8': [-6,-20, -10,-28, -13,-35, -16,-43, -20,-53, -25,-64, -25,-64, -30,-76, -30,-76, -36,-90, -36,-90, -43,-106, -43,-106, -43,-106, -50,-122, -50,-122, -50,-122, -56,-137, -56,-137, -62,-151, -62,-151, -62,-151, -68,-165, -68,-165],
+            'g5': [-2,-6, -4,-9, -5,-11, -6,-14, -7,-16, -9,-20, -9,-20, -10,-23, -10,-23, -12,-27, -12,-27, -14,-32, -14,-32, -14,-32, -15,-35, -15,-35, -15,-35, -17,-40, -17,-40, -18,-43, -18,-43, -18,-43, -20,-47, -20,-47],
+            'g6': [-2,-8, -4,-12, -5,-14, -6,-17, -7,-20, -9,-25, -9,-25, -10,-29, -10,-29, -12,-34, -12,-34, -14,-39, -14,-39, -14,-39, -15,-44, -15,-44, -15,-44, -17,-49, -17,-49, -18,-54, -18,-54, -18,-54, -20,-60, -20,-60],
+            'h5': [0,-4, 0,-5, 0,-6, 0,-8, 0,-9, 0,-11, 0,-11, 0,-13, 0,-13, 0,-15, 0,-15, 0,-18, 0,-18, 0,-18, 0,-20, 0,-20, 0,-20, 0,-23, 0,-23, 0,-25, 0,-25, 0,-25, 0,-27, 0,-27],
+            'h6': [0,-6, 0,-8, 0,-9, 0,-11, 0,-13, 0,-16, 0,-16, 0,-19, 0,-19, 0,-22, 0,-22, 0,-25, 0,-25, 0,-25, 0,-29, 0,-29, 0,-29, 0,-32, 0,-32, 0,-36, 0,-36, 0,-36, 0,-40, 0,-40],
+            'h7': [0,-10, 0,-12, 0,-15, 0,-18, 0,-21, 0,-25, 0,-25, 0,-30, 0,-30, 0,-35, 0,-35, 0,-40, 0,-40, 0,-40, 0,-46, 0,-46, 0,-46, 0,-52, 0,-52, 0,-57, 0,-57, 0,-57, 0,-63, 0,-63],
+            'h8': [0,-14, 0,-18, 0,-22, 0,-27, 0,-33, 0,-39, 0,-39, 0,-46, 0,-46, 0,-54, 0,-54, 0,-63, 0,-63, 0,-63, 0,-72, 0,-72, 0,-72, 0,-81, 0,-81, 0,-89, 0,-89, 0,-89, 0,-97, 0,-97],
+            'h9': [0,-25, 0,-30, 0,-36, 0,-43, 0,-52, 0,-62, 0,-62, 0,-74, 0,-74, 0,-87, 0,-87, 0,-100, 0,-100, 0,-100, 0,-115, 0,-115, 0,-115, 0,-130, 0,-130, 0,-140, 0,-140, 0,-140, 0,-155, 0,-155],
+            'F6': [12,6, 18,10, 22,13, 27,16, 33,20, 41,25, 41,25, 49,30, 49,30, 58,36, 58,36, 68,43, 68,43, 68,43, 79,50, 79,50, 79,50, 88,56, 88,56, 98,62, 98,62, 98,62, 108,68, 108,68],
+            'F7': [16,6, 22,10, 28,13, 34,16, 41,20, 50,25, 50,25, 60,30, 60,30, 71,36, 71,36, 83,43, 83,43, 83,43, 96,50, 96,50, 96,50, 108,56, 108,56, 119,62, 119,62, 119,62, 131,68, 131,68],
+            'F8': [20,6, 28,10, 35,13, 43,16, 53,20, 64,25, 64,25, 76,30, 76,30, 90,36, 90,36, 106,43, 106,43, 106,43, 122,50, 122,50, 122,50, 137,56, 137,56, 151,62, 151,62, 151,62, 165,68, 165,68],
+            'G6': [8,2, 12,4, 14,5, 17,6, 20,7, 25,9, 25,9, 29,10, 29,10, 34,12, 34,12, 39,14, 39,14, 39,14, 44,15, 44,15, 44,15, 49,17, 49,17, 54,18, 54,18, 54,18, 60,20, 60,20],
+            'G7': [12,2, 16,4, 20,5, 24,6, 28,7, 34,9, 34,9, 40,10, 40,10, 47,12, 47,12, 54,14, 54,14, 54,14, 61,15, 61,15, 61,15, 69,17, 69,17, 75,18, 75,18, 75,18, 83,20, 83,20],
+            'H6': [6,0, 8,0, 9,0, 11,0, 13,0, 16,0, 16,0, 19,0, 19,0, 22,0, 22,0, 25,0, 25,0, 25,0, 29,0, 29,0, 29,0, 32,0, 32,0, 36,0, 36,0, 36,0, 40,0, 40,0],
+            'H7': [10,0, 12,0, 15,0, 18,0, 21,0, 25,0, 25,0, 30,0, 30,0, 35,0, 35,0, 40,0, 40,0, 40,0, 46,0, 46,0, 46,0, 52,0, 52,0, 57,0, 57,0, 57,0, 63,0, 63,0],
+            'H8': [14,0, 18,0, 22,0, 27,0, 33,0, 39,0, 39,0, 46,0, 46,0, 54,0, 54,0, 63,0, 63,0, 63,0, 72,0, 72,0, 72,0, 81,0, 81,0, 89,0, 89,0, 89,0, 97,0, 97,0],
+            'H9': [25,0, 30,0, 36,0, 43,0, 52,0, 62,0, 62,0, 74,0, 74,0, 87,0, 87,0, 100,0, 100,0, 100,0, 115,0, 115,0, 115,0, 130,0, 130,0, 140,0, 140,0, 140,0, 155,0, 155,0],
+            'H10': [40,0, 48,0, 58,0, 70,0, 84,0, 100,0, 100,0, 120,0, 120,0, 140,0, 140,0, 160,0, 160,0, 160,0, 185,0, 185,0, 185,0, 210,0, 210,0, 230,0, 230,0, 230,0, 250,0, 250,0]
+        }
+    };
+
+    let isoRes = { dia: 0, up: 0, lo: 0 };
+    let toolRes = { dia: 0, up: 0, lo: 0 };
+
+    function formatSign(num) { if (Number(num.toFixed(3)) === 0) return "0"; return (num > 0 ? "+" : "") + num.toFixed(3); }
+    function round3(num) { return Math.round(num * 1000) / 1000; }
+    function getIsoIndex(d) {
+        if(d <= 3) return 0; if(d <= 6) return 1; if(d <= 10) return 2; if(d <= 14) return 3; if(d <= 18) return 4;
+        if(d <= 24) return 5; if(d <= 30) return 6; if(d <= 40) return 7; if(d <= 50) return 8; if(d <= 65) return 9;
+        if(d <= 80) return 10; if(d <= 100) return 11; if(d <= 120) return 12; if(d <= 140) return 13; if(d <= 160) return 14;
+        if(d <= 180) return 15; if(d <= 200) return 16; if(d <= 225) return 17; if(d <= 250) return 18; if(d <= 280) return 19;
+        if(d <= 315) return 20; if(d <= 355) return 21; if(d <= 400) return 22; if(d <= 450) return 23; if(d <= 500) return 24;
+        return -1;
+    }
+
+    // --- 1. ISO Lookup Logic ---
+    document.getElementById('isoForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const d = parseFloat(document.getElementById('isoDia').value);
+        const g = document.getElementById('isoGrade').value;
+        if(!g || isNaN(d) || d > 500 || d < 0) { alert("กรุณาระบุ Diameter (0-500mm) และเกรดให้ถูกต้อง"); return; }
+        const idx = getIsoIndex(d);
+        if(idx === -1) return;
+        const vals = isoData.fits[g];
+        isoRes = { dia: d, up: vals[idx * 2] / 1000, lo: vals[idx * 2 + 1] / 1000 };
+        document.getElementById('isoResDia').textContent = "Ø" + d;
+        document.getElementById('isoResUp').textContent = formatSign(isoRes.up);
+        document.getElementById('isoResLo').textContent = formatSign(isoRes.lo);
+        document.getElementById('isoResultBox').style.display = 'block';
+    });
+    
+    document.getElementById('btnTransferToTool').addEventListener('click', function() {
+        document.getElementById('diameter').value = isoRes.dia;
+        document.getElementById('tolUpper').value = isoRes.up;
+        document.getElementById('tolLower').value = isoRes.lo;
+        highlightInput(['diameter', 'tolUpper', 'tolLower']);
+    });
+
+    // --- 2. Tool Calc Logic ---
+    document.getElementById('tolForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const toolType = document.getElementById('toolType').value;
+        const dia = parseFloat(document.getElementById('diameter').value);
+        const up = parseFloat(document.getElementById('tolUpper').value);
+        const lo = parseFloat(document.getElementById('tolLower').value);
+
+        let k = (toolType === "reamer") ? 0.75 : 0.65;
+        const range = round3(up - lo);
+        const s2 = round3(range * k);
+        const s3 = round3(range * 0.25);
+        const s4 = round3(s2 - s3);
+
+        const finUp = round3(lo + s2);
+        const finLo = round3(lo + s4);
+        const tRange = Math.abs(round3(finUp - finLo));
+        toolRes = { dia: dia, up: finUp, lo: finLo };
+
+        document.getElementById('resDiaLeft').textContent = "Ø" + dia.toFixed(3);
+        document.getElementById('resUpLeft').textContent = formatSign(finUp);
+        document.getElementById('resLoLeft').textContent = formatSign(finLo);
+
+        const display = document.getElementById('displayLeft');
+        display.classList.remove('text-green', 'text-orange', 'text-red');
+        let statusEmoji = "";
+        
+        if(tRange > 0.005) {
+            display.classList.add('text-green');
+            statusEmoji = "✅";
+        } else if(tRange > 0.003) {
+            display.classList.add('text-orange');
+            statusEmoji = "⚠️";
+        } else {
+            display.classList.add('text-red');
+            statusEmoji = "❌";
+        }
+
+        document.getElementById('rangeStatusBar').innerHTML = `Range Tool: <strong>${tRange.toFixed(3)}</strong> ${statusEmoji}`;
+        document.getElementById('resultBoxLeft').style.display = 'block';
+        document.getElementById('btnTransferToConv').style.display = 'flex';
+    });
+
+    // Transfer 2 -> 3
+    document.getElementById('btnTransferToConv').addEventListener('click', function() {
+        document.getElementById('c_diameter').value = toolRes.dia;
+        document.getElementById('c_tolUpper').value = toolRes.up;
+        document.getElementById('c_tolLower').value = toolRes.lo;
+        highlightInput(['c_diameter', 'c_tolUpper', 'c_tolLower']);
+    });
+
+    // --- 3. Convert Logic ---
+    document.getElementById('convertForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const d = parseFloat(document.getElementById('c_diameter').value);
+        const up = parseFloat(document.getElementById('c_tolUpper').value);
+        const lo = parseFloat(document.getElementById('c_tolLower').value);
+
+        if(isNaN(d) || isNaN(up) || isNaN(lo)) {
+            alert("กรุณากรอกข้อมูลให้ครบถ้วน");
+            return;
+        }
+
+        const actMax = round3(d + up);
+        const actMin = round3(d + lo);
+        const range = round3(Math.abs(up - lo));
+
+        document.getElementById('resDiaMinus').textContent = "Ø" + actMax.toFixed(3);
+        document.getElementById('resUpMinus').textContent = formatSign(0);
+        document.getElementById('resLoMinus').textContent = formatSign(-range);
+
+        document.getElementById('resDiaPlus').textContent = "Ø" + actMin.toFixed(3);
+        document.getElementById('resUpPlus').textContent = formatSign(range);
+        document.getElementById('resLoPlus').textContent = formatSign(0);
+
+        document.getElementById('resultBoxRight').style.display = 'block';
+    });
+
+    // Function สำหรับ Animation ไฮไลท์
+    function highlightInput(ids) {
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) {
+                el.classList.remove('input-highlight');
+                void el.offsetWidth; // Force reflow เพื่อให้เล่น animation ซ้ำได้
+                el.classList.add('input-highlight');
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>คำนวณขนาดรูระบายน้ำมัน (Oil Hole Calculator)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-color: #1f2937;
+            --border-color: #e5e7eb;
+            --success-color: #16a34a;
+            --error-color: #dc2626;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 15px;
+            font-weight: 300;
+            overflow-x: hidden; /* ป้องกัน scroll แนวนอน */
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            margin-top: 10px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .header h1 { margin: 0; font-size: 1.25rem; font-weight: 400; }
+
+        .content { padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+
+        /* --- Scaling Section --- */
+        .diagram-container {
+            width: 100%;
+            background-color: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden; /* คุมไม่ให้ส่วนที่เกิน scale หลุดออกมา */
+            display: flex;
+            justify-content: center;
+        }
+
+        .drawing-wrapper {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 700px; /* ขนาดความกว้างอ้างอิงของรูปต้นฉบับ */
+            height: 400px; /* ขนาดความสูงอ้างอิง */
+            transform-origin: top center;
+            margin-left: -350px; /* ครึ่งหนึ่งของ width เพื่อให้อยู่ตรงกลาง */
+            transition: transform 0.2s ease-out;
+        }
+
+        .bg-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        /* --- Floating Groups --- */
+        .floating-group {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0); 
+            padding: 6px;
+            border-radius: 10px;
+            transform-origin: center center;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .floating-group:hover, .floating-group:focus-within {
+            transform: translate(-50%, -50%) scale(1.15) !important;
+            z-index: 100;
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        /* พิกัดตำแหน่งบนรูป 700x400 */
+        #pos-output-dia { top: 46%; left: 9%; transform: translate(-50%, -50%) rotate(-30deg); }
+        #pos-hole-count { top: 79%; left: 20%; transform: translate(-50%, -50%) rotate(-30deg); }
+        #pos-input-dia  { top: 24%; left: 92%; transform: translate(-50%, -50%); }
+
+        .input-label-tag {
+            font-size: 0.75rem;
+            font-weight: 400;
+            margin-bottom: 4px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1); 
+        }
+        
+        .tag-in { color: #1e40af; border: 1px solid #1e40af; background: #fff; }
+        .tag-out { color: #be185d; border: 1px solid #be185d; background: #fff; }
+
+        .floating-input {
+            width: 95px;
+            padding: 10px 4px;
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+            border-radius: 8px;
+            outline: none;
+            background-color: #e2e8f0; 
+            color: #64748b;
+            border: 2px solid transparent; 
+            transition: all 0.3s ease;
+        }
+
+        .floating-input:focus, .floating-input.has-value {
+            background-color: white;
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.1);
+        }
+
+        .mini-guide {
+            font-size: 0.7rem; color: #d97706; margin-top: 4px; cursor: pointer;
+            text-decoration: underline; display: none; background: #fffbeb;
+            padding: 2px 6px; border-radius: 4px; border: 1px dashed #d97706;
+        }
+
+        /* --- Result Section --- */
+        .result-section {
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        .comparison-box {
+            display: flex; align-items: center; justify-content: center;
+            gap: 20px; font-size: 1.5rem; font-weight: 400; color: #334155;
+        }
+
+        .comp-val { 
+            background: #fff; padding: 8px 15px; border-radius: 10px; 
+            border: 1px solid #e2e8f0; min-width: 100px; font-weight: 600;
+        }
+
+        .status-text-bottom { margin-top: 15px; font-weight: 600; font-size: 1.75rem; }
+    </style>
+</head>
+<body onload="init()">
+
+<div class="container">
+    <div class="header">
+        <h1>คำนวณอัตราส่วนรูระบายน้ำมัน</h1>
+    </div>
+
+    <div class="content">
+        <div id="diagramContainer" class="diagram-container">
+            <div id="drawingWrapper" class="drawing-wrapper">
+                <img src="../images/oilholeratio.svg" alt="Tool Diagram" class="bg-image" onerror="this.src='https://placehold.co/700x400?text=Oil+Hole+Diagram'">
+                
+                <div id="pos-output-dia" class="floating-group">
+                    <div class="input-label-tag tag-out">Output Ø</div>
+                    <input type="number" id="outputDia" class="floating-input" placeholder="0.0" step="0.1" inputmode="decimal">
+                </div>
+
+                <div id="pos-hole-count" class="floating-group">
+                    <input type="number" id="outputCount" class="floating-input" placeholder="0" step="1" inputmode="numeric">
+                    <div class="input-label-tag tag-out" style="margin-top: 5px;">จำนวนรู</div>
+                    <div id="maxHoleGuide" class="mini-guide" onclick="useMaxHoles()">
+                        max: <span id="maxHoleVal">0</span>
+                    </div>
+                </div>
+
+                <div id="pos-input-dia" class="floating-group">
+                    <div class="input-label-tag tag-in">Input Ø</div>
+                    <input type="number" id="inputDia" class="floating-input" placeholder="0.0" step="0.1" inputmode="decimal">
+                </div>
+            </div>
+        </div>
+
+        <div class="result-section">
+            <div class="comparison-box">
+                <div>
+                    <div style="font-size:0.8rem; color:#be185d; margin-bottom:4px; font-weight:600;">พื้นที่รูระบายรวม (Output)</div>
+                    <div id="dispOutput" class="comp-val">0.00</div>
+                </div>
+                
+                <div id="operator" style="color: #94a3b8; font-size: 2.5rem;">&le;</div>
+                
+                <div>
+                    <div style="font-size:0.8rem; color:#1e40af; margin-bottom:4px; font-weight:600;">พื้นที่รูเข้า (Input)</div>
+                    <div id="dispInput" class="comp-val">0.00</div>
+                </div>
+            </div>
+            <div id="statusTextBottom" class="status-text-bottom" style="color:#94a3b8;">รอข้อมูล...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const DRAWING_WIDTH = 700;
+    const DRAWING_HEIGHT = 400;
+    const drawingWrapper = document.getElementById('drawingWrapper');
+    const diagramContainer = document.getElementById('diagramContainer');
+
+    function updateLayout() {
+        if (!diagramContainer || !drawingWrapper) return;
+        const availableWidth = diagramContainer.clientWidth;
+        let scale = availableWidth / DRAWING_WIDTH;
+        if (scale > 1) scale = 1;
+
+        drawingWrapper.style.transform = `scale(${scale})`;
+        diagramContainer.style.height = `${DRAWING_HEIGHT * scale}px`;
+    }
+
+    function init() {
+        updateLayout();
+        window.addEventListener('resize', updateLayout);
+
+        // Setup Inputs
+        const inputs = document.querySelectorAll('.floating-input');
+        inputs.forEach(input => {
+            input.addEventListener('input', function() {
+                this.value ? this.classList.add('has-value') : this.classList.remove('has-value');
+                calculate();
+            });
+        });
+    }
+
+    function calculate() {
+        const inputDia = parseFloat(document.getElementById('inputDia').value);
+        const outputDia = parseFloat(document.getElementById('outputDia').value);
+        const outputCount = parseFloat(document.getElementById('outputCount').value);
+
+        const pi = Math.PI;
+        const guideBox = document.getElementById('maxHoleGuide');
+        const maxHoleVal = document.getElementById('maxHoleVal');
+        
+        // Calculate Max Holes Guide
+        if (!isNaN(inputDia) && !isNaN(outputDia) && outputDia > 0) {
+            let areaInput = pi * Math.pow((inputDia / 2), 2);
+            let areaOutputSingle = pi * Math.pow((outputDia / 2), 2);
+            maxHoleVal.innerText = Math.floor(areaInput / areaOutputSingle);
+            guideBox.style.display = 'block'; 
+        } else {
+            guideBox.style.display = 'none';
+        }
+
+        if (isNaN(inputDia) || isNaN(outputDia) || isNaN(outputCount)) {
+            resetDisplay();
+            if(!isNaN(inputDia)) {
+                 document.getElementById('dispInput').innerText = (pi * Math.pow((inputDia / 2), 2)).toFixed(2);
+            }
+            return;
+        }
+
+        const areaInput = pi * Math.pow((inputDia / 2), 2);
+        const areaTotalOutput = (pi * Math.pow((outputDia / 2), 2)) * outputCount;
+
+        document.getElementById('dispInput').innerText = areaInput.toFixed(2);
+        document.getElementById('dispOutput').innerText = areaTotalOutput.toFixed(2);
+
+        const op = document.getElementById('operator');
+        const st = document.getElementById('statusTextBottom');
+
+        if (areaInput >= areaTotalOutput) {
+            op.innerHTML = "&ge;"; op.style.color = "#16a34a"; 
+            st.innerText = "สถานะ : OK"; st.style.color = "#16a34a";
+        } else {
+            op.innerHTML = "&lt;"; op.style.color = "#dc2626"; 
+            st.innerText = "สถานะ : NG"; st.style.color = "#dc2626";
+        }
+    }
+
+    function useMaxHoles() {
+        const input = document.getElementById('outputCount');
+        input.value = document.getElementById('maxHoleVal').innerText;
+        input.classList.add('has-value');
+        calculate();
+    }
+
+    function resetDisplay() {
+        document.getElementById('dispOutput').innerText = "0.00";
+        document.getElementById('operator').innerHTML = "&le;";
+        document.getElementById('operator').style.color = "#94a3b8";
+        document.getElementById('statusTextBottom').innerText = "รอข้อมูล...";
+        document.getElementById('statusTextBottom').style.color = "#94a3b8";
+    }
+</script>
+</body>
+</html>

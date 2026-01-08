@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineering Tools</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Prompt:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* สีหลัก */
+            --primary: #00bcd4;
+            --primary-dark: #0097a7;
+            --secondary: #d81b60;
+            --success: #4caf50;
+            --indigo: #6366f1;
+            
+            /* สีพาสเทลสำหรับพื้นหลังหัวข้อ */
+            --pastel-bg-indigo: #eef2ff;
+            --pastel-bg-pink: #fff1f5;
+            --pastel-bg-cyan: #e6fffa;
+            --pastel-bg-green: #ecfdf5;
+
+            /* สีพื้นหลังและตัวอักษร */
+            --bg: #f4f7f9; 
+            --card-bg: #ffffff;
+            --input-bg: #ffffff; /* ปรับพื้นหลัง input เป็นขาวเพื่อให้ตัดกับขอบชัดเจน */
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --border: #eef2f6; 
+            
+            /* สีขอบ Input ใหม่ (ให้ชัดขึ้น) */
+            --input-border: #cbd5e1; 
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Prompt', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px 10px;
+            font-size: 105%; 
+        }
+
+        .main-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        @media (min-width: 900px) {
+            .main-container {
+                grid-template-columns: 1fr 1fr;
+            }
+            .full-width {
+                grid-column: span 2;
+            }
+        }
+
+        h1.main-title {
+            text-align: center;
+            font-size: 1.9rem;
+            font-weight: 500;
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            grid-column: span 1;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+        }
+        @media (min-width: 900px) { h1.main-title { grid-column: span 2; } }
+
+        /* --- Card Styles --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); 
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            padding: 20px 18px;
+            text-align: center;
+        }
+
+        .card-header h2 {
+            font-size: 1.15rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .card-body {
+            padding: 25px 20px;
+            flex: 1;
+        }
+
+        /* --- Form Elements --- */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 400;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+
+        /* ปรับแต่งช่อง Input */
+        input {
+            width: 100%;
+            padding: 12px;
+            /* เพิ่มความหนาและเปลี่ยนสีเส้นขอบให้ชัดขึ้น */
+            border: 2px solid var(--input-border); 
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 400;
+            font-family: inherit;
+            transition: all 0.2s;
+            text-align: center;
+            background: var(--input-bg);
+        }
+
+        input:hover {
+            border-color: #94a3b8; /* เมื่อเอาเมาส์ชี้ ให้ขอบเข้มขึ้นอีกนิด */
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(0, 188, 212, 0.15);
+        }
+        
+        /* ช่องผลลัพธ์ (Output) */
+        .output-field {
+            background: #f0fdf4 !important;
+            border: 2px solid #86efac !important; /* ขอบเขียวชัดๆ */
+            color: var(--success) !important;
+            font-weight: 500;
+            font-size: 1.25rem;
+        }
+
+        /* --- Unit Converter Specific --- */
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--primary-dark);
+            margin: 20px 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 5px;
+        }
+        
+        .unit-row {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            background: #f8fafc; 
+            padding: 10px 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        .unit-label { font-size: 0.9rem; font-weight: 400; color: var(--text-main); }
+        
+        .btn-clear {
+            width: 100%;
+            padding: 12px;
+            background: #f1f5f9;
+            border: none;
+            border-radius: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.2s;
+        }
+        .btn-clear:hover { background: #e2e8f0; }
+
+        /* --- GD&T Specific --- */
+        .gdt-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .conversion-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .gdt-box {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #fff;
+            min-width: 0;
+        }
+        
+        .gdt-box-success { background: #f0fdf4 !important; border-color: #bbf7d0 !important; }
+        .gdt-box-primary { background: #ecfeff !important; border-color: #a5f3fc !important; }
+
+        .icon-box { width: 26px; height: 26px; flex-shrink: 0; }
+        .gdt-value { font-weight: 400; font-size: 1.15rem; overflow: hidden; text-overflow: ellipsis; }
+
+        /* --- Rule of Three Specific --- */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        @media (max-width: 500px) { .grid-2 { grid-template-columns: 1fr; } }
+
+        /* --- Ratio Specific --- */
+        .ratio-inputs {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .ratio-inputs input { width: 100px; }
+        .ratio-result {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.7rem;
+            font-weight: 500;
+            color: var(--indigo);
+            text-align: center;
+            border: 2px dashed #cbd5e1; /* ขอบเส้นประชัดขึ้น */
+        }
+
+        svg { width: 100%; height: 100%; stroke: currentColor; stroke-width: 2; fill: none; }
+    </style>
+</head>
+<body>
+
+    <h1 class="main-title">🛠️ Engineering Tools</h1>
+
+    <div class="main-container">
+
+        <div class="card">
+            <div class="card-header" style="background-color: var(--pastel-bg-indigo);">
+                <h2 style="color: var(--indigo);">🔄 แปลงอัตราส่วน (Ratio)</h2>
+            </div>
+            <div class="card-body">
+                <div class="ratio-inputs">
+                    <input type="number" id="valA" placeholder="A" oninput="calcRatio()">
+                    <span style="font-size: 1.5rem; font-weight: 400; color: var(--text-muted);">:</span>
+                    <input type="number" id="valB" placeholder="B" oninput="calcRatio()">
+                </div>
+                <label style="text-align: center;">ผลลัพธ์ทศนิยม (ปัดขึ้นตำแหน่งที่ 9)</label>
+                <div class="ratio-result" id="resRatio">0</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header" style="background-color: var(--pastel-bg-pink);">
+                <h2 style="color: var(--secondary);">⚖️ เทียบบัญญัติไตรยาง</h2>
+            </div>
+            <div class="card-body">
+                <div class="grid-2">
+                    <div class="form-group"><label>ค่าที่วัดได้ (Ref)</label><input type="number" id="measureRef" oninput="calcRuleOfThree()"></div>
+                    <div class="form-group"><label>ค่าในแบบ (Show)</label><input type="number" id="showRef" oninput="calcRuleOfThree()"></div>
+                </div>
+                <div class="form-group">
+                    <label>ค่าที่ต้องการทราบ (Target Measure)</label>
+                    <input type="number" id="measureTarget" oninput="calcRuleOfThree()">
+                </div>
+                <div class="form-group">
+                    <label>ผลลัพธ์ (Result)</label>
+                    <input type="number" id="resultRule3" class="output-field" readonly>
+                </div>
+            </div>
+        </div>
+
+        <div class="card full-width">
+            <div class="card-header" style="background-color: var(--pastel-bg-cyan);">
+                <h2 style="color: var(--primary-dark);">⚙️ GD&T Converter (Conc ⬌ Runout)</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-group" style="max-width: 400px; margin: 0 auto 20px auto;">
+                    <label style="text-align: center;">ระบุค่าที่ต้องการแปลง</label>
+                    <input type="number" id="gdtInput" oninput="calcGDT()" placeholder="0.000">
+                </div>
+                
+                <div class="gdt-container">
+                    <div class="conversion-row">
+                        <div class="gdt-box">
+                            <div class="icon-box" style="color: var(--text-muted);"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="5"></circle></svg></div>
+                            <span class="gdt-value" id="val_conc_1">0.000</span>
+                        </div>
+                        <span style="color: var(--primary-dark); font-size: 1.2rem;">➡</span>
+                        <div class="gdt-box gdt-box-success">
+                            <div class="icon-box" style="color: var(--success);"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><polyline points="18 12 18 6 12 6"></polyline></svg></div>
+                            <span class="gdt-value" id="res_runout_1" style="color: var(--success);">0.000</span>
+                        </div>
+                    </div>
+
+                    <div class="conversion-row">
+                        <div class="gdt-box">
+                            <div class="icon-box" style="color: var(--text-muted);"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><polyline points="18 12 18 6 12 6"></polyline></svg></div>
+                            <span class="gdt-value" id="val_runout_2">0.000</span>
+                        </div>
+                        <span style="color: var(--primary-dark); font-size: 1.2rem;">➡</span>
+                        <div class="gdt-box gdt-box-primary">
+                            <div class="icon-box" style="color: var(--primary-dark);"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="5"></circle></svg></div>
+                            <span class="gdt-value" id="res_conc_2" style="color: var(--primary-dark);">0.000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card full-width">
+            <div class="card-header" style="background-color: var(--pastel-bg-green);">
+                <h2 style="color: var(--success);">📏 แปลงหน่วย (Unit Converter)</h2>
+            </div>
+            <div class="card-body">
+                <p style="text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">ระบุตัวเลขในช่องที่ต้องการ (ค่าจะคำนวณอัตโนมัติ)</p>
+                
+                <div class="section-title">ความยาว (Length)</div>
+                <div class="grid-2">
+                    <div class="unit-row"><div class="unit-label">มิลลิเมตร (mm)</div><input type="number" id="u_mm" placeholder="0"></div>
+                    <div class="unit-row"><div class="unit-label">เซนติเมตร (cm)</div><input type="number" id="u_cm" placeholder="0"></div>
+                    <div class="unit-row"><div class="unit-label">เมตร (m)</div><input type="number" id="u_m" placeholder="0"></div>
+                    <div class="unit-row"><div class="unit-label">วา (wah)</div><input type="number" id="u_wah" placeholder="0" style="background:#fffbeb; border-color:#fbbf24;"></div>
+                    <div class="unit-row"><div class="unit-label">นิ้ว (inch)</div><input type="number" id="u_in" placeholder="0"></div>
+                    <div class="unit-row"><div class="unit-label">ฟุต (ft)</div><input type="number" id="u_ft" placeholder="0"></div>
+                </div>
+
+                <div class="section-title" style="margin-top: 35px;">พื้นที่ (Area - ISO & Thai)</div>
+                <div class="grid-2">
+                    <div>
+                        <div class="unit-row"><div class="unit-label">ตร.มม. (mm²)</div><input type="number" id="a_sqmm" placeholder="0"></div>
+                        <div class="unit-row"><div class="unit-label">ตร.ซม. (cm²)</div><input type="number" id="a_sqcm" placeholder="0"></div>
+                        <div class="unit-row"><div class="unit-label">ตร.เมตร (m²)</div><input type="number" id="a_sqm" placeholder="0"></div>
+                    </div>
+                    <div>
+                        <div class="unit-row"><div class="unit-label">ตร.วา (Sq.Wah)</div><input type="number" id="a_sqwah" placeholder="0" style="background:#fffbeb; border-color:#fbbf24;"></div>
+                        <div class="unit-row"><div class="unit-label">งาน (Ngan)</div><input type="number" id="a_ngan" placeholder="0" style="background:#fffbeb; border-color:#fbbf24;"></div>
+                        <div class="unit-row"><div class="unit-label">ไร่ (Rai)</div><input type="number" id="a_rai" placeholder="0" style="background:#fffbeb; border-color:#fbbf24;"></div>
+                    </div>
+                </div>
+
+                <button class="btn-clear" id="btnClearUnit">ล้างข้อมูลทั้งหมด</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Helper: Rounding
+        function roundUnit(num) { return parseFloat(num.toFixed(6)); }
+
+        // --- Logic 1: Ratio ---
+        function calcRatio() {
+            const a = parseFloat(document.getElementById('valA').value);
+            const b = parseFloat(document.getElementById('valB').value);
+            const out = document.getElementById('resRatio');
+            if (a >= 0 && b > 0) {
+                const factor = Math.pow(10, 9);
+                const roundedUp = Math.ceil((a / b) * factor) / factor;
+                out.textContent = parseFloat(roundedUp.toFixed(9));
+            } else if (b === 0) { out.textContent = "Error"; }
+            else { out.textContent = "0"; }
+        }
+
+        // --- Logic 2: Rule of Three ---
+        function calcRuleOfThree() {
+            const mRef = parseFloat(document.getElementById('measureRef').value);
+            const sRef = parseFloat(document.getElementById('showRef').value);
+            const mTarget = parseFloat(document.getElementById('measureTarget').value);
+            const resultBox = document.getElementById('resultRule3');
+
+            if (!isNaN(mRef) && !isNaN(sRef) && !isNaN(mTarget) && mRef !== 0) {
+                resultBox.value = ((mTarget * sRef) / mRef).toFixed(3);
+            } else {
+                resultBox.value = "";
+            }
+        }
+
+        // --- Logic 3: GD&T ---
+        function calcGDT() {
+            const inputVal = parseFloat(document.getElementById('gdtInput').value);
+            const spanConc1 = document.getElementById('val_conc_1');
+            const spanRunout1 = document.getElementById('res_runout_1');
+            const spanRunout2 = document.getElementById('val_runout_2');
+            const spanConc2 = document.getElementById('res_conc_2');
+
+            if (!isNaN(inputVal)) {
+                const txtVal = inputVal.toFixed(3);
+                spanConc1.textContent = txtVal;
+                spanRunout2.textContent = txtVal;
+                spanRunout1.textContent = (inputVal * 2).toFixed(3);
+                spanConc2.textContent = (inputVal / 2).toFixed(3);
+            } else {
+                [spanConc1, spanRunout1, spanRunout2, spanConc2].forEach(s => s.textContent = "0.000");
+            }
+        }
+
+        // --- Logic 4: Unit Converter ---
+        const u_inputs = {
+            mm: document.getElementById('u_mm'),
+            cm: document.getElementById('u_cm'),
+            m: document.getElementById('u_m'),
+            wah: document.getElementById('u_wah'),
+            in: document.getElementById('u_in'),
+            ft: document.getElementById('u_ft')
+        };
+
+        function updateUnits(source, val) {
+            if (isNaN(val)) return;
+            let mm = 0;
+            switch(source) {
+                case 'mm': mm = val; break;
+                case 'cm': mm = val * 10; break;
+                case 'm': mm = val * 1000; break;
+                case 'wah': mm = val * 2000; break;
+                case 'in': mm = val * 25.4; break;
+                case 'ft': mm = val * 304.8; break;
+            }
+            if (source !== 'mm') u_inputs.mm.value = roundUnit(mm);
+            if (source !== 'cm') u_inputs.cm.value = roundUnit(mm / 10);
+            if (source !== 'm') u_inputs.m.value = roundUnit(mm / 1000);
+            if (source !== 'wah') u_inputs.wah.value = roundUnit(mm / 2000);
+            if (source !== 'in') u_inputs.in.value = roundUnit(mm / 25.4);
+            if (source !== 'ft') u_inputs.ft.value = roundUnit(mm / 304.8);
+        }
+
+        Object.keys(u_inputs).forEach(key => {
+            u_inputs[key].addEventListener('input', function() {
+                if(this.value === "") {
+                    Object.values(u_inputs).forEach(input => input.value = "");
+                    return;
+                }
+                updateUnits(key, parseFloat(this.value));
+            });
+        });
+
+        // Area Logic
+        const a_inputs = {
+            sqmm: document.getElementById('a_sqmm'),
+            sqcm: document.getElementById('a_sqcm'),
+            sqm: document.getElementById('a_sqm'),
+            sqwah: document.getElementById('a_sqwah'),
+            ngan: document.getElementById('a_ngan'),
+            rai: document.getElementById('a_rai')
+        };
+
+        function updateArea(source, val) {
+            if (isNaN(val)) return;
+            let sqm = 0;
+            switch(source) {
+                case 'sqmm': sqm = val / 1000000; break;
+                case 'sqcm': sqm = val / 10000; break;
+                case 'sqm': sqm = val; break;
+                case 'sqwah': sqm = val * 4; break;
+                case 'ngan': sqm = val * 400; break;
+                case 'rai': sqm = val * 1600; break;
+            }
+
+            if (source !== 'sqmm') a_inputs.sqmm.value = roundUnit(sqm * 1000000);
+            if (source !== 'sqcm') a_inputs.sqcm.value = roundUnit(sqm * 10000);
+            if (source !== 'sqm') a_inputs.sqm.value = roundUnit(sqm);
+            if (source !== 'sqwah') a_inputs.sqwah.value = roundUnit(sqm / 4);
+            if (source !== 'ngan') a_inputs.ngan.value = roundUnit(sqm / 400);
+            if (source !== 'rai') a_inputs.rai.value = roundUnit(sqm / 1600);
+        }
+
+        Object.keys(a_inputs).forEach(key => {
+            a_inputs[key].addEventListener('input', function() {
+                if(this.value === "") {
+                    Object.values(a_inputs).forEach(input => input.value = "");
+                    return;
+                }
+                updateArea(key, parseFloat(this.value));
+            });
+        });
+
+        document.getElementById('btnClearUnit').onclick = () => {
+            Object.values(u_inputs).forEach(input => input.value = "");
+            Object.values(a_inputs).forEach(input => input.value = "");
+        };
+    </script>
+</body>
+</html>

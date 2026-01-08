@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engineering Tools Suite (All-in-One)</title>
+    
+    <script src="../js/tailwindcss.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: tailwind.colors.sky },
+                    fontFamily: {
+                        sans: ['Sarabun', 'sans-serif'],
+                        eng: ['Inter', 'sans-serif']
+                    }
+                },
+            },
+        };
+    </script>
+    
+    <style>
+        /* --- Font Face Setup --- */
+        @font-face { font-family: 'Sarabun'; src: url('../fonts/Sarabun-Regular.ttf') format('truetype'); font-weight: 400; }
+        @font-face { font-family: 'Sarabun'; src: url('../fonts/Sarabun-Medium.ttf') format('truetype'); font-weight: 500; }
+        @font-face { font-family: 'Inter'; src: url('../fonts/Inter-Regular.ttf') format('truetype'); font-weight: 400; }
+
+        body { font-family: 'Sarabun', sans-serif; font-weight: 400; }
+        
+        /* --- Styles for PCD & Tolerance --- */
+        .obj-outline { fill: #f0f9ff; stroke: #0ea5e9; stroke-width: 2.5; stroke-linejoin: round; }
+        .dim-line { stroke: #334155; stroke-width: 1; fill: none; }
+        .extension-line { stroke: #94a3b8; stroke-width: 0.8; fill: none; }
+        .dim-text { font-family: 'Sarabun', sans-serif; font-size: 14px; font-weight: 400; fill: #1e293b; text-anchor: middle; background-color: white; }
+        .btn-active { color: #0ea5e9; border-bottom: 2px solid #0ea5e9; font-weight: 500; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* --- Styles for R Special (New) --- */
+        .diagram-container {
+            width: 100%;
+            background: #fafafa;
+            border-radius: 12px;
+            border: 1px dashed #e5e7eb;
+            position: relative;
+            min-height: 400px; /* ความสูงเริ่มต้น */
+            margin-bottom: 20px;
+        }
+        .drawing-wrapper {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            transition: transform 0.3s ease, height 0.3s ease;
+        }
+        .bg-image {
+            position: absolute; top: 50%; left: 50%; width: 100%; height: 100%;
+            object-fit: contain; transform: translate(-50%, -50%); display: block;
+        }
+        .tag {
+            position: absolute; display: flex; align-items: center; justify-content: center;
+            padding: 2px 4px; font-family: 'Inter', sans-serif;
+            font-size: 22px; /* UPDATED: ลดขนาดลงจาก 24px */
+            font-weight: 500;
+            color: #1f2937; white-space: nowrap; z-index: 10;
+        }
+        /* Vertical Input Style */
+        .input-group {
+            transform: translate(-50%, -50%) rotate(-90deg) !important;
+            background-color: transparent; border: 1px dashed transparent;
+            border-radius: 6px; cursor: text; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            padding: 4px;
+            text-shadow: -1px -1px 0 rgba(255,255,255,0.9), 1px -1px 0 rgba(255,255,255,0.9), -1px 1px 0 rgba(255,255,255,0.9), 1px 1px 0 rgba(255,255,255,0.9);
+        }
+        .input-group:hover, .input-group:focus-within {
+            transform: translate(-50%, -50%) rotate(0deg) scale(1.2) !important; 
+            z-index: 100; background-color: white; border: 2px solid #2563eb;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); text-shadow: none;
+        }
+        .embedded-input {
+            width: 80px; /* UPDATED: เพิ่มความกว้างจาก 70px เพื่อรองรับ 3 digit */
+            font-family: 'Inter', sans-serif;
+            font-size: 22px; /* UPDATED: ลดขนาดลงจาก 24px */
+            font-weight: 500;
+            color: #2563eb; background: transparent; border: none; outline: none;
+            text-align: center; padding: 0; margin: 0;
+        }
+        .embedded-input::placeholder { color: rgba(0,0,0,0.3); font-size: 18px; }
+        .input-group:hover .embedded-input, .input-group:focus-within .embedded-input {
+            color: #1f2937; text-shadow: none;
+        }
+        .center-pos { transform: translate(-50%, -50%); }
+
+    </style>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
+    
+    <div class="container bg-white p-5 md:p-8 rounded-xl shadow-lg w-full max-w-xl">
+        
+        <div class="flex border-b border-slate-200 mb-6 overflow-x-auto scrollbar-hide">
+            <button id="btnPCD" onclick="switchTab('pcd')" 
+                    class="flex-1 py-3 px-2 whitespace-nowrap text-center text-sm md:text-base font-normal text-slate-500 hover:text-slate-700 transition-colors btn-active">
+                R PCD
+            </button>
+            <button id="btnRSpecial" onclick="switchTab('rSpecial')" 
+                    class="flex-1 py-3 px-2 whitespace-nowrap text-center text-sm md:text-base font-normal text-slate-500 hover:text-slate-700 transition-colors">
+                R Special
+            </button>
+            <button id="btnGrinding" onclick="switchTab('grinding')" 
+                    class="flex-1 py-3 px-2 whitespace-nowrap text-center text-sm md:text-base font-normal text-slate-500 hover:text-slate-700 transition-colors">
+                Grinding Wheel
+            </button>
+            <button id="btnTolerance" onclick="switchTab('tolerance')" 
+                    class="flex-1 py-3 px-2 whitespace-nowrap text-center text-sm md:text-base font-normal text-slate-500 hover:text-slate-700 transition-colors">
+                Tolerance
+            </button>
+        </div>
+
+        <div id="pcdCalculator" class="min-h-[25rem]">
+            <h2 class="text-xl md:text-2xl font-normal text-center text-slate-800 mb-2">คำนวณขนาด R PCD</h2>
+            <p class="text-center text-slate-500 text-sm mb-6 font-light">คำนวณ R ตามเงื่อนไขความสูง (H)</p>
+            <div class="flex flex-col sm:flex-row items-end gap-4 mb-6">
+                <div class="w-full flex-grow">
+                    <label class="block text-sm text-slate-500 mb-1 font-light">ป้อนค่าความสูง (H)</label>
+                    <input type="number" id="heightInput" placeholder="0.00" step="any" class="w-full px-4 py-2.5 text-lg border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none transition-all font-normal text-slate-700">
+                </div>
+                <button onclick="calculatePCD()" class="w-full sm:w-auto bg-primary-600 text-white font-normal px-6 py-3 rounded-lg hover:bg-primary-700 flex items-center justify-center gap-2 shadow-md transition-all active:scale-95 h-[52px]"> <span>คำนวณ</span></button>
+            </div>
+            <div id="errorMessagePCD" class="bg-red-50 text-red-600 border border-red-200 p-3 rounded-lg text-center mb-4 hidden text-sm font-light"></div>
+            <div id="visualizationArea" class="bg-slate-50 border border-slate-200 rounded-lg w-full h-72 md:h-80 relative hidden overflow-hidden">
+                <svg id="drawing" width="100%" height="100%" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="1"/></pattern>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#334155" /></marker>
+                        <marker id="arrowhead-rev" markerWidth="10" markerHeight="7" refX="0" refY="3.5" orient="auto"><polygon points="10 0, 0 3.5, 10 7" fill="#334155" /></marker>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                    <g id="drawingGroup" transform="translate(200, 250)">
+                        <path id="shapePath" class="obj-outline"></path>
+                        <g id="dimGroup">
+                            <line id="extLineBottom" class="extension-line"></line><line id="extLineTop" class="extension-line"></line>
+                            <line id="dimLineHeight" class="dim-line" marker-start="url(#arrowhead-rev)" marker-end="url(#arrowhead)"></line>
+                            <text id="heightDimText" class="dim-text"></text><line id="radiusLeader" class="dim-line" marker-end="url(#arrowhead)"></line>
+                            <line id="radiusLeaderShelf" class="dim-line"></line><text id="radiusDimText" class="dim-text" style="text-anchor: start;"></text>
+                        </g>
+                    </g>
+                </svg>
+            </div>
+        </div>
+
+        <div id="rSpecialCalculator" class="hidden min-h-[25rem]">
+            <h2 class="text-xl md:text-2xl font-normal text-center text-slate-800 mb-2">
+                <i class="fas fa-drafting-compass text-primary-600 mr-2"></i>R Special
+            </h2>
+            <p class="text-center text-slate-500 text-sm mb-6 font-light">คำนวณค่า R Special</p>
+            
+            <div id="diagramContainer" class="diagram-container">
+                <div id="drawingWrapper" class="drawing-wrapper">
+                    <img src="../images/rpcds.svg" alt="R Special Diagram" class="bg-image" onerror="this.style.opacity='0.5'">
+
+                    <div id="pos-input-a" class="tag input-group" style="top: 63%; left: 43%;">
+                        <input type="number" id="inputA" class="embedded-input" placeholder="?" oninput="calculateRSpecial()">
+                    </div>
+
+                    <div id="pos-result-r" class="tag center-pos" style="top: 29%; left: 87%;">
+                        <span id="outputR">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="grindingCalculator" class="hidden min-h-[25rem]">
+            <h2 class="text-xl md:text-2xl font-normal text-center text-slate-800 mb-2">Grinding Wheel Spec</h2>
+            <p class="text-center text-slate-500 text-sm mb-6 font-light">ตรวจสอบค่า Width และ Center จาก R</p>
+            <div class="space-y-6">
+                <div class="flex flex-col sm:flex-row items-end gap-4">
+                    <div class="w-full"><label class="block text-sm text-slate-500 mb-1 font-light">ป้อนค่า R (เช่น 1.5, 2.0)</label><input type="number" id="rValue" step="0.5" placeholder="0.00" class="w-full px-4 py-2 text-lg border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none font-normal text-slate-700"></div>
+                    <button onclick="calculateGrinding()" class="w-full sm:w-auto bg-primary-600 text-white font-normal px-6 py-2.5 rounded-lg hover:bg-primary-700 shadow-md transition-all active:scale-95 whitespace-nowrap h-[48px]">ตรวจสอบ</button>
+                </div>
+                <div class="bg-slate-50 border border-slate-200 p-6 rounded-xl space-y-4 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-primary-500"></div>
+                    <div class="flex justify-between items-center border-b border-slate-200 pb-3"><span class="text-slate-600 font-normal">Wheel Width:</span><span id="widthResult" class="text-3xl font-normal font-mono text-primary-600">-</span></div>
+                    <div class="flex justify-between items-center"><span class="text-slate-600 font-normal">Center Position:</span><span id="centerResult" class="text-3xl font-normal font-mono text-primary-600">-</span></div>
+                </div>
+                <p id="errorMessageGrinding" class="text-red-500 text-sm font-normal text-center h-5"></p>
+                <div class="text-xs text-slate-400 text-center mt-8 font-light">*ข้อมูลอ้างอิงมาตรฐาน Grinding Wheel Spec</div>
+            </div>
+        </div>
+
+        <div id="toleranceCalculator" class="hidden min-h-[25rem]">
+            <h2 class="text-xl md:text-2xl font-normal text-center text-slate-800 mb-2">คำนวณ R และ C</h2>
+            <p class="text-center text-slate-500 text-sm mb-6 font-light">หา Dimension จาก Max/Min</p>
+            <div class="space-y-6 max-w-sm mx-auto">
+                <div class="space-y-4">
+                    <div><label class="block text-sm text-slate-500 mb-1 font-light">ค่าสูงสุด (Max)</label><input type="number" id="valMax" placeholder="0.00" step="0.01" oninput="calculateTolerance()" class="w-full px-4 py-3 text-lg border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none font-normal text-slate-700"></div>
+                    <div><label class="block text-sm text-slate-500 mb-1 font-light">ค่าต่ำสุด (Min)</label><input type="number" id="valMin" placeholder="0.00" step="0.01" oninput="calculateTolerance()" class="w-full px-4 py-3 text-lg border-2 border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 outline-none font-normal text-slate-700"></div>
+                </div>
+                <div id="warningTolerance" class="text-red-500 text-sm font-normal text-center h-5 opacity-0 transition-opacity">ค่า Min ต้องไม่มากกว่า Max</div>
+                <div class="bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-8 text-center transition-all duration-300 hover:border-primary-400 hover:bg-sky-50">
+                    <p class="text-slate-500 mb-2 font-light">Dimension ที่นำไประบุใน Drawing</p>
+                    <div id="resultToleranceDisplay" class="text-4xl font-normal text-slate-800 tracking-tight">0 <span class="text-slate-400 text-2xl font-light">±0</span></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Shared: Tab Switching ---
+        function switchTab(tab) {
+            const tabs = ['pcd', 'rSpecial', 'grinding', 'tolerance'];
+            const btnMap = { 'pcd': 'btnPCD', 'rSpecial': 'btnRSpecial', 'grinding': 'btnGrinding', 'tolerance': 'btnTolerance' };
+            
+            tabs.forEach(t => {
+                const div = document.getElementById(`${t}Calculator`);
+                const btn = document.getElementById(btnMap[t]);
+                if (t === tab) {
+                    div.classList.remove('hidden'); btn.classList.add('btn-active');
+                    if (t === 'rSpecial') setTimeout(updateRSpecialLayout, 10);
+                } else {
+                    div.classList.add('hidden'); btn.classList.remove('btn-active');
+                }
+            });
+        }
+
+        // --- Logic 3: R Special Calculator ---
+        const DRAWING_WIDTH = 665; 
+        const DRAWING_HEIGHT = 399;
+        const diagramContainer = document.getElementById('diagramContainer');
+        const drawingWrapper = document.getElementById('drawingWrapper');
+
+        function updateRSpecialLayout() {
+            if (!diagramContainer || !drawingWrapper) return;
+            const availableWidth = diagramContainer.clientWidth;
+
+            // 1. คำนวณ Scale พื้นฐานเพื่อให้พอดีกับความกว้าง
+            let baseScale = availableWidth / DRAWING_WIDTH;
+            
+            // 2. เพิ่มขนาดขึ้น 40% (คูณด้วย 1.4)
+            const boostFactor = 1.4;
+            const finalScale = baseScale * boostFactor;
+
+            // 3. Apply transform และปรับความสูง container
+            // ตั้งค่า transformOrigin เป็น center top เพื่อให้ขยายลงด้านล่าง
+            drawingWrapper.style.transformOrigin = 'center top';
+            drawingWrapper.style.transform = `scale(${finalScale})`;
+            
+            // ปรับความสูงของ container ให้รองรับภาพที่ใหญ่ขึ้น
+            diagramContainer.style.height = `${DRAWING_HEIGHT * finalScale}px`;
+        }
+
+        function calculateRSpecial() {
+            const inputEl = document.getElementById('inputA');
+            const outputEl = document.getElementById('outputR');
+            const valA = parseFloat(inputEl.value);
+            if (isNaN(valA)) { outputEl.innerText = "-"; return; }
+            let resultR = 0;
+            if (valA <= 0.35) resultR = 2.0; else if (valA <= 0.85) resultR = 2.5; else if (valA <= 1.35) resultR = 3.0; else resultR = 4.0;
+            outputEl.innerHTML = `R = ${resultR.toFixed(1)}`;
+        }
+        
+        window.addEventListener('resize', updateRSpecialLayout);
+
+        // --- (Other logic: Grinding, PCD, Tolerance remains the same) ---
+        // --- Logic 1: Grinding Wheel ---
+        const grindingData = { "1.5": { center: 0.6, width: 2.1 }, "2": { center: 0.7, width: 2.7 }, "2.5": { center: 0.8, width: 3.3 }, "3": { center: 1.0, width: 4.0 }, "3.5": { center: 1.2, width: 4.7 }, "4": { center: 1.3, width: 5.3 }, "4.5": { center: 1.5, width: 6.0 }, "5":   { center: 1.7, width: 6.7 }, "5.5": { center: 1.8, width: 7.3 }, "6": { center: 2.0, width: 8.0 }, "6.5": { center: 2.2, width: 8.7 }, "7": { center: 2.3, width: 9.3 }, "7.5": { center: 2.5, width: 10.0 }, "8": { center: 2.7, width: 10.7 }, "8.5": { center: 2.8, width: 11.3 }, "9": { center: 3.0, width: 12.0 }, "9.5": { center: 3.2, width: 12.7 }, "10": { center: 3.3, width: 13.3 }, "10.5": { center: 3.5, width: 14.0 }, "11": { center: 3.7, width: 14.7 }, "11.5": { center: 3.8, width: 15.3 }, "12": { center: 4.0, width: 16.0 }, "12.5": { center: 4.2, width: 16.7 }, "13": { center: 4.3, width: 17.3 }, "13.5": { center: 4.5, width: 18.0 } };
+        function calculateGrinding() {
+            const rawValue = document.getElementById('rValue').value; const rKey = parseFloat(rawValue); const widthRes = document.getElementById('widthResult'); const centerRes = document.getElementById('centerResult'); const errorMsg = document.getElementById('errorMessageGrinding');
+            if (!isNaN(rKey) && grindingData[rKey]) { const data = grindingData[rKey]; widthRes.innerText = data.width.toFixed(1); centerRes.innerText = data.center.toFixed(1); errorMsg.innerText = ''; widthRes.parentElement.classList.add('bg-sky-50'); setTimeout(() => widthRes.parentElement.classList.remove('bg-sky-50'), 300); } else { widthRes.innerText = '-'; centerRes.innerText = '-'; errorMsg.innerText = isNaN(rKey) ? 'กรุณาป้อนตัวเลข' : `ไม่พบข้อมูลสำหรับ R: ${rawValue}`; }
+        }
+
+        // --- Logic 2: R PCD Calculator ---
+        function calculatePCD() {
+            const inputEl = document.getElementById('heightInput'); const vizArea = document.getElementById('visualizationArea'); const errorEl = document.getElementById('errorMessagePCD'); const h = parseFloat(inputEl.value);
+            if (isNaN(h) || h <= 0) { errorEl.innerText = 'กรุณาป้อนค่าความสูง (H) มากกว่า 0'; errorEl.classList.remove('hidden'); vizArea.classList.add('hidden'); return; }
+            errorEl.classList.add('hidden'); vizArea.classList.remove('hidden');
+            let r; if (h < 2) r = 1; else if (h >= 4) r = 2; else r = 1.5; drawPCD(h, r);
+        }
+        function drawPCD(h, r) {
+            const MAX_HEIGHT = 200; const FIXED_WIDTH_RATIO = 5; let scale = MAX_HEIGHT / h; if (scale > 50) scale = 50; if (scale < 10) scale = 10; 
+            const objW = FIXED_WIDTH_RATIO * scale; const objH = h * scale; const objR = r * scale;
+            const pathData = `M 0,0 L 0,${-objH} L ${objW - objR},${-objH} A ${objR},${objR} 0 0 1 ${objW},${-objH + objR} L ${objW},0 Z`; document.getElementById('shapePath').setAttribute('d', pathData);
+            const dimOffset = 30; const extOvershoot = 5; const extGap = 5;
+            const extLineBottom = document.getElementById('extLineBottom'); extLineBottom.setAttribute('x1', -extGap); extLineBottom.setAttribute('y1', 0); extLineBottom.setAttribute('x2', -dimOffset - extOvershoot, 0); extLineBottom.setAttribute('y2', 0);
+            const extLineTop = document.getElementById('extLineTop'); extLineTop.setAttribute('x1', -extGap); extLineTop.setAttribute('y1', -objH); extLineTop.setAttribute('x2', -dimOffset - extOvershoot); extLineTop.setAttribute('y2', -objH);
+            const dimLine = document.getElementById('dimLineHeight'); dimLine.setAttribute('x1', -dimOffset); dimLine.setAttribute('y1', 0); dimLine.setAttribute('x2', -dimOffset); dimLine.setAttribute('y2', -objH);
+            const hText = document.getElementById('heightDimText'); hText.setAttribute('x', -dimOffset - 15); hText.setAttribute('y', -objH / 2 + 5); hText.textContent = h.toFixed(2);
+            const angleRad = 45 * (Math.PI / 180); const arcCX = objW - objR; const arcCY = -objH + objR; const pArcX = arcCX + (objR * Math.cos(angleRad)); const pArcY = arcCY - (objR * Math.sin(angleRad)); 
+            const leaderLen = 30; const pLeaderX = pArcX + (leaderLen * Math.cos(angleRad)); const pLeaderY = pArcY - (leaderLen * Math.sin(angleRad));
+            const rLine = document.getElementById('radiusLeader'); rLine.setAttribute('x1', pLeaderX); rLine.setAttribute('y1', pLeaderY); rLine.setAttribute('x2', pArcX); rLine.setAttribute('y2', pArcY);
+            const shelfLine = document.getElementById('radiusLeaderShelf'); shelfLine.setAttribute('x1', pLeaderX); shelfLine.setAttribute('y1', pLeaderY); shelfLine.setAttribute('x2', pLeaderX + 40); shelfLine.setAttribute('y2', pLeaderY);
+            const rText = document.getElementById('radiusDimText'); rText.setAttribute('x', pLeaderX + 5); rText.setAttribute('y', pLeaderY - 5); rText.textContent = `R ${r.toFixed(1)}`;
+            const group = document.getElementById('drawingGroup'); const shiftX = (400 - objW) / 2; group.setAttribute('transform', `translate(${shiftX}, 250)`);
+        }
+
+        // --- Logic 4: Tolerance Calculator ---
+        function calculateTolerance() {
+            const valMaxInput = document.getElementById('valMax'); const valMinInput = document.getElementById('valMin'); const warningEl = document.getElementById('warningTolerance'); const resultDisplay = document.getElementById('resultToleranceDisplay');
+            const maxVal = parseFloat(valMaxInput.value); const minVal = parseFloat(valMinInput.value);
+            if (isNaN(maxVal) || isNaN(minVal)) { resultDisplay.innerHTML = '0 <span class="text-slate-400 text-2xl font-light">±0</span>'; warningEl.style.opacity = '0'; return; }
+            if (minVal > maxVal) { warningEl.style.opacity = '1'; valMaxInput.classList.add('border-red-500'); valMinInput.classList.add('border-red-500'); resultDisplay.innerHTML = '- <span class="text-red-400 text-lg font-normal">Error</span>'; return; } else { warningEl.style.opacity = '0'; valMaxInput.classList.remove('border-red-500'); valMinInput.classList.remove('border-red-500'); }
+            const diff = maxVal - minVal; const mainVal = diff / 2; const tolVal = diff / 4; const formatNumber = (num) => parseFloat(num.toFixed(4)) * 1;
+            resultDisplay.innerHTML = `${formatNumber(mainVal)} <span class="text-slate-500 text-2xl font-light">±${formatNumber(tolVal)}</span>`;
+        }
+
+        document.getElementById('heightInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') calculatePCD(); });
+        document.getElementById('rValue').addEventListener('keydown', (e) => { if (e.key === 'Enter') calculateGrinding(); });
+        switchTab('pcd');
+    </script>
+</body>
+</html>

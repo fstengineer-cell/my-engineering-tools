@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cutting Tool Engineering Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #db2777;
+            --primary-gradient: linear-gradient(135deg, #be185d, #ec4899);
+            --bg: #f4f5f7;
+            --card: #ffffff;
+            --border: #e5e7eb;
+            --text: #1f2937;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--bg);
+            font-family: "Kanit", sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+            box-sizing: border-box;
+            font-weight: 300;
+        }
+
+        /* --- Layout Grid --- */
+        .main-wrapper {
+            display: grid;
+            grid-template-columns: 480px 1fr; 
+            gap: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+            align-items: start;
+        }
+
+        .col-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* --- Card Styles --- */
+        .tool-card {
+            background: var(--card);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .full-height-card {
+            min-height: 600px;
+            height: 100%;
+        }
+
+        .header {
+            padding: 12px 20px;
+            background: var(--primary-gradient);
+            color: white;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+
+        .content {
+            padding: 15px;
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        /* --- Drawing Area --- */
+        .drawing-area {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .drawing-area img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* --- Floating Input Logic (Updated Style) --- */
+        .floating-input {
+            position: absolute;
+            width: 60px;
+            padding: 6px;
+            font-family: "Kanit", sans-serif;
+            font-size: 1rem;
+            font-weight: 400;
+            color: #475569;
+            text-align: center;
+            z-index: 50;
+            cursor: text;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-radius: 6px;
+            
+            /* 1. Before Input: Gray Background, No Border */
+            background-color: #e2e8f0; 
+            border: none;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        /* 2. After Input (Has Value): Transparent Background */
+        .floating-input:not(:placeholder-shown) {
+            background-color: transparent;
+            border: none;
+            box-shadow: none;
+            
+            /* Text Style on Transparent BG */
+            color: var(--primary);
+            font-weight: 600;
+            text-shadow: 
+                -1px -1px 0 rgba(255,255,255,0.9),  
+                 1px -1px 0 rgba(255,255,255,0.9),
+                -1px  1px 0 rgba(255,255,255,0.9),
+                 1px  1px 0 rgba(255,255,255,0.9);
+        }
+
+        /* 3. Interaction (Hover/Focus): Active State */
+        .floating-input:hover,
+        .floating-input:focus {
+            background-color: #fff;
+            border: 2px solid var(--primary);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            transform: translate(-50%, -50%) rotate(0deg) scale(1.2) !important;
+            z-index: 100;
+            text-shadow: none;
+            color: var(--text);
+            font-weight: 400;
+        }
+
+        .floating-input::placeholder {
+            color: transparent; 
+        }
+
+        /* Transform Classes */
+        .rot-0   { transform: translate(-50%, -50%) rotate(0deg); }
+        .rot-45  { transform: translate(-50%, -50%) rotate(-45deg); }
+        .rot-90  { transform: translate(-50%, -50%) rotate(-90deg); }
+        .rot-n90 { transform: translate(-50%, -50%) rotate(90deg); }
+
+        /* --- Result Overlays --- */
+        .overlay-text {
+            position: absolute;
+            padding: 2px 4px;
+            background: transparent;
+            border: none;
+            color: #0f172a;
+            font-weight: 500;
+            font-size: 1rem;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            pointer-events: none;
+            text-shadow: 
+                -1px -1px 0 rgba(255,255,255,0.9),  
+                 1px -1px 0 rgba(255,255,255,0.9),
+                -1px  1px 0 rgba(255,255,255,0.9),
+                 1px  1px 0 rgba(255,255,255,0.9);
+        }
+
+        .overlay-text.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1.0);
+        }
+
+        /* --- Status Bar --- */
+        .status-bar {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 12px;
+            width: 100%;
+            border: 1px dashed #cbd5e1;
+            margin-bottom: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .res-val {
+            color: var(--primary);
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        /* --- V-Cut Layout --- */
+        .vcut-container {
+            position: relative;
+            width: 100%;
+            max-width: 680px; 
+            margin: 0 auto;
+        }
+
+        .pattern-box {
+            display: none;
+            width: 100%;
+        }
+
+        .pattern-box.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Error Message --- */
+        .msg-box {
+            text-align: center;
+            color: #ef4444;
+            font-size: 0.9rem;
+            min-height: 20px;
+            margin-top: 5px;
+            font-weight: 400;
+        }
+
+        /* --- Responsive (Mobile Safe) --- */
+        @media (max-width: 1024px) {
+            .main-wrapper {
+                grid-template-columns: 1fr; 
+            }
+            .col-stack {
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            .tool-card {
+                flex: 1;
+                min-width: 300px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .col-stack {
+                flex-direction: column;
+            }
+            body {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-wrapper">
+
+    <div class="col-stack">
+        <div class="tool-card">
+            <div class="header">
+                <h1>Shape of Tank Channel</h1>
+            </div>
+            <div class="content">
+                <div class="drawing-area">
+                    <div style="position: relative; display: inline-block; width: 100%;">
+                        <img src="../images/tank.svg" alt="Tank Drawing" onerror="this.src='https://placehold.co/480x320?text=Tank+Image'">
+                        
+                        <div style="position: absolute; top: 64%; left: 52%;">
+                            <input type="number" id="inputDia" class="floating-input rot-90" placeholder=" " step="0.1" oninput="calculateTank()">
+                        </div>
+
+                        <div id="val-D" class="overlay-text" style="top: 10%; left: 15%;">0.0</div>
+                        <div id="val-W" class="overlay-text" style="top: 28%; left: 38%; transform: translate(-50%, -50%) rotate(-90deg);">0.0</div>
+                        <div id="val-C" class="overlay-text" style="top: 23%; left: 93%;">A-0.0</div>
+                    </div>
+                </div>
+                <div id="msgBox" class="msg-box"></div>
+            </div>
+        </div>
+
+        <div class="tool-card">
+            <div class="header">
+                <h1>Shape of V-Cut</h1>
+            </div>
+            <div class="content">
+                <div class="drawing-area">
+                    <img src="../images/shapev.svg" alt="Shape V-Cut" style="max-height: 275px;" onerror="this.src='https://placehold.co/480x320?text=Shape+V-Cut+Image'">
+                </div>
+            </div>
+        </div>
+    </div> 
+
+    <div class="tool-card full-height-card">
+        <div class="header">
+            <h1>V-Cut Pattern Selector</h1>
+        </div>
+        <div class="content">
+            
+            <div class="status-bar">
+                <div class="status-item">
+                    <span>Result N</span>
+                    <span id="dispN" class="res-val">-</span>
+                </div>
+                <div class="status-item">
+                    <span>Result P</span>
+                    <span id="dispP" class="res-val">-</span>
+                </div>
+                <div class="status-item">
+                    <span>Value K</span>
+                    <span id="dispK" class="res-val">-</span>
+                </div>
+            </div>
+
+            <div class="vcut-container">
+                
+                <div style="position: absolute; top: 25.5%; left: 3%;">
+                    <input type="number" id="inpTK" class="floating-input rot-45" placeholder=" " step="0.1" oninput="calculateVCut()">
+                </div>
+
+                <div style="position: absolute; top: 23%; left: 20%;">
+                    <input type="number" id="inpOil" class="floating-input rot-0" placeholder=" " step="0.1" oninput="calculateVCut()">
+                </div>
+
+                <div style="position: absolute; top: 43%; left: 97%;">
+                    <input type="number" id="inpShank" class="floating-input rot-90" placeholder=" " step="0.1" oninput="calculateVCut()">
+                </div>
+
+                <div id="pattern-box-A" class="pattern-box active">
+                    <img src="../images/pata.svg" alt="Pattern A" style="width: 100%; opacity: 0.9;" onerror="this.src='https://placehold.co/680x450?text=Pattern+A+Large'">
+                    
+                    <div id="ov-K" class="overlay-text" style="top: 13%; left: 39%; transform: translate(-50%, -50%) rotate(-45deg);"></div>
+                    <div id="ov-N-A" class="overlay-text" style="top: 20%; left: 55%; transform: translate(-50%, -50%) rotate(45deg);"></div>
+                    <div id="ov-P-A" class="overlay-text" style="top: 89.5%; left: 85%;"></div>
+                </div>
+
+                <div id="pattern-box-B" class="pattern-box">
+                    <img src="../images/patb.svg" alt="Pattern B" style="width: 100%; opacity: 0.9;" onerror="this.src='https://placehold.co/680x450?text=Pattern+B+Large'">
+                    
+                    <div id="ov-N-B" class="overlay-text" style="top: 22%; left: 59%; transform: translate(-50%, -50%) rotate(-90deg);"></div>
+                    <div id="ov-P-B" class="overlay-text" style="top: 89.5%; left: 85%;"></div>
+                </div>
+
+            </div>
+
+            <div style="margin-top: 20px; font-size: 0.85rem; color: #94a3b8; text-align: center;">
+                <i class="ph ph-info"></i> Hover over the boxes to input values.
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    /* ============================================
+                  TANK CHANNEL LOGIC
+    ============================================ */
+    function calculateTank() {
+        const diaVal = document.getElementById('inputDia').value;
+        const dia = parseFloat(diaVal);
+        
+        const W_el = document.getElementById('val-W');
+        const D_el = document.getElementById('val-D');
+        const C_el = document.getElementById('val-C');
+        const msgBox = document.getElementById("msgBox");
+
+        if (diaVal === "" || isNaN(dia)) {
+            msgBox.innerText = "";
+            [W_el, D_el, C_el].forEach(e => e.classList.remove("show"));
+            return;
+        }
+
+        let W = 0, D = 0, C = "-";
+        let isValid = true;
+
+        if (dia >= 3 && dia <= 6)       { W=1.5; D=0.5; C="-"; }
+        else if (dia > 6 && dia <= 9)   { W=2.0; D=0.5; C="A-0.5"; }
+        else if (dia > 9 && dia <= 12)  { W=3.0; D=0.5; C="A-0.8"; }
+        else if (dia > 12 && dia <= 16) { W=4.0; D=1.0; C="A-1.0"; }
+        else if (dia > 16 && dia <= 22) { W=5.0; D=1.0; C="A-1.6"; }
+        else if (dia > 22 && dia <= 50) { W=6.0; D=1.5; C="A-1.6"; }
+        else { isValid = false; }
+
+        if (!isValid) {
+            msgBox.innerText = "Range: 3.0 - 50.0 mm only";
+            [W_el, D_el, C_el].forEach(e => e.classList.remove("show"));
+            return;
+        }
+
+        msgBox.innerText = "";
+        
+        W_el.innerText = W.toFixed(1);
+        D_el.innerText = D.toFixed(1);
+        C_el.innerText = C;
+
+        [W_el, D_el, C_el].forEach(e => e.classList.add("show"));
+    }
+
+    /* ============================================
+                  V-CUT LOGIC
+    ============================================ */
+    const kTable = {
+        0.8: 1.5, 1.0: 2.0, 1.2: 2.0, 1.4: 2.5, 1.5: 2.5,
+        1.6: 3.0, 1.8: 3.0, 2.0: 3.0, 2.2: 3.0, 2.4: 3.5,
+        2.5: 3.5, 2.6: 3.5, 2.8: 4.0, 3.0: 4.0
+    };
+
+    function calculateVCut() {
+        const tk = parseFloat(document.getElementById("inpTK").value);
+        const d  = parseFloat(document.getElementById("inpOil").value);
+        const ds = parseFloat(document.getElementById("inpShank").value);
+
+        const boxA = document.getElementById("pattern-box-A");
+        const boxB = document.getElementById("pattern-box-B");
+        const overlays = document.querySelectorAll(".pattern-box .overlay-text"); 
+
+        if (isNaN(tk) || isNaN(d) || isNaN(ds)) {
+            boxA.classList.add("active");
+            boxB.classList.remove("active");
+            overlays.forEach(o => o.classList.remove("show"));
+            
+            document.getElementById("dispN").innerText = "-";
+            document.getElementById("dispP").innerText = "-";
+            document.getElementById("dispK").innerText = "-";
+            return;
+        }
+
+        const N = tk + d + 2;
+        const P = (ds / 2) * Math.tan(Math.PI/6) + 3;
+        
+        const dKey = d.toFixed(1);
+        const K = kTable[parseFloat(dKey)] || "-"; 
+
+        document.getElementById("dispN").innerText = N.toFixed(2);
+        document.getElementById("dispP").innerText = P.toFixed(2);
+        document.getElementById("dispK").innerText = K;
+
+        document.getElementById("ov-K").innerText = K;
+        
+        const nText = " " + N.toFixed(1);
+        document.getElementById("ov-N-A").innerText = nText;
+        document.getElementById("ov-N-B").innerText = nText;
+
+        const pText = "( " + P.toFixed(1) + " )";
+        document.getElementById("ov-P-A").innerText = pText;
+        document.getElementById("ov-P-B").innerText = pText;
+
+        if (N > P) {
+            boxA.classList.add("active");
+            boxB.classList.remove("active");
+        } else {
+            boxA.classList.remove("active");
+            boxB.classList.add("active");
+        }
+
+        setTimeout(() => {
+            overlays.forEach(o => o.classList.add("show"));
+        }, 50);
+    }
+</script>
+
+</body>
+</html>

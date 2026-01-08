@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spiral Drill & Tank Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --success-color: #10b981;
+            --success-hover: #059669;
+            --danger-color: #ef4444;
+            --danger-hover: #dc2626;
+            --light-gray: #f8fafc;
+            --medium-gray: #e2e8f0;
+            --dark-gray: #475569;
+            --white-color: #ffffff;
+            --font-family: 'Inter', sans-serif;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #334155;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .hidden { display: none !important; }
+
+        .app-container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--dark-gray);
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .calculator-wrapper {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap; 
+            justify-content: center;
+            gap: 20px; 
+        }
+
+        .calculator-card {
+            flex: 1; 
+            min-width: 300px;
+            background: var(--white-color);
+            padding: 24px 24px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow-lg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .calculator-card h2 {
+            margin-top: 0; 
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark-gray);
+            border-bottom: 1px solid var(--medium-gray);
+            padding-bottom: 12px;
+            text-align: center;
+            min-height: 60px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 500; 
+            color: var(--dark-gray);
+            font-size: 0.95rem;
+        }
+        .form-group .hint {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: normal;
+            display: block;
+            margin-top: 4px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 16px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 8px;
+            background: var(--light-gray);
+            transition: all 0.3s ease;
+            outline: none;
+        }
+        .form-group input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .btn-calc {
+            background: var(--primary-color); 
+            color: var(--white-color); 
+        }
+        .btn-calc:hover { background: var(--primary-hover); }
+
+        .btn-use {
+            background: var(--success-color); 
+            color: var(--white-color); 
+            margin-top: 10px;
+        }
+        .btn-use:hover { background: var(--success-hover); }
+        
+        .calculator-result {
+            margin-top: 20px;
+            padding: 16px;
+            background: var(--light-gray);
+            border: 1px solid var(--medium-gray);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: var(--dark-gray);
+            line-height: 1.5;
+        }
+
+        /* --- Image Overlay Styles --- */
+        .image-container {
+            position: relative; 
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+            transition: opacity 0.3s ease;
+        }
+
+        .image-container img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            margin: 0 auto;
+        }
+
+        /* --- ปรับปรุง Overlay Label (โปร่งใส ไม่มีขอบ) --- */
+        .overlay-label {
+            position: absolute;
+            
+            /* พื้นหลังใส */
+            background-color: transparent;
+            
+            /* ไม่มีเส้นขอบ */
+            border: none;
+            
+            color: var(--success-color);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 18px; /* ปรับขนาดให้ชัดเจนขึ้นเล็กน้อย */
+            font-weight: 800;
+            
+            /* เอาเงากล่องออก */
+            box-shadow: none;
+            
+            /* เพิ่มขอบตัวหนังสือสีขาว (Text Shadow) ให้อ่านออกบนรูป */
+            text-shadow: 
+                -1px -1px 0 #fff,  
+                 1px -1px 0 #fff,
+                -1px  1px 0 #fff,
+                 1px  1px 0 #fff;
+
+            /* การจัดตำแหน่ง */
+            transform: translate(-50%, -50%); 
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        /* --- ปรับตำแหน่ง Label ตรงนี้ --- */
+        #labelX {
+            top: 14%;    
+            left: 28%;   
+        }
+        
+        #labelY {
+            top: 60%;    
+            left: 92%;
+            /* คงการหมุน 80 องศาไว้ */
+            transform: translate(-50%, -50%) rotate(80deg); 
+        }
+        /* ------------------------------------------------ */
+
+        .notification {
+            display: none;
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--white-color);
+            padding: 16px 32px;
+            border-radius: 50px;
+            z-index: 1000;
+            box-shadow: var(--box-shadow-lg);
+            font-weight: 500;
+            animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .notification.success { background: linear-gradient(135deg, var(--success-color) 0%, var(--success-hover) 100%); }
+        .notification.error { background: linear-gradient(135deg, var(--danger-color) 0%, var(--danger-hover) 100%); }
+        
+        @keyframes slideDown {
+            from { transform: translateX(-50%) translateY(-100px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        @media (max-width: 900px) {
+            body { padding: 12px; }
+            .calculator-wrapper { flex-direction: column; }
+            .calculator-card { min-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="notification" class="notification"></div>
+
+    <div class="app-container">
+        <h1><i class="fas fa-calculator"></i> Engineering Tools: Drill & Tank</h1>
+
+        <div class="calculator-wrapper">
+
+            <div class="calculator-card">
+                <h2>คำนวณ Lead<br>จากมุมเกลียว</h2>
+                <div class="form-group">
+                    <label for="D1">Diameter (D):</label>
+                    <input type="number" id="D1" placeholder="เช่น 15" min="0" step="any">
+                </div>
+                <div class="form-group">
+                    <label for="angle">มุมเกลียว (θ) องศา:</label>
+                    <input type="number" id="angle" placeholder="เช่น 30" min="0" max="89.9" step="any">
+                </div>
+                <button onclick="calculateLead()" class="btn btn-calc">
+                    <i class="fas fa-play"></i> คำนวณ Lead
+                </button>
+                <div id="resultLead" class="calculator-result hidden"></div>
+                <button id="useLeadButton" onclick="useCalculatedLead()" class="btn btn-use hidden">
+                    &downarrow; ใช้ค่า Lead นี้
+                </button>
+            </div>
+
+            <div class="calculator-card">
+                <h2>คำนวณมุมเกลียว<br>จาก Lead</h2>
+                <div class="form-group">
+                    <label for="D2">Diameter (D):</label>
+                    <input type="number" id="D2" placeholder="เช่น 14.1" min="0" step="any">
+                </div>
+                <div class="form-group">
+                    <label for="lead">Lead:</label>
+                    <input type="number" id="lead" placeholder="เช่น 81.621" min="0" step="any">
+                </div>
+                <button onclick="calculateAngle()" class="btn btn-calc">
+                    <i class="fas fa-play"></i> คำนวณมุมเกลียว
+                </button>
+                <div id="resultAngle" class="calculator-result hidden"></div>
+            </div>
+
+            <div class="calculator-card" style="border-top: 4px solid var(--success-color);">
+                <h2>คำนวณมุมชดเชย<br>มุมบิด Tank (Tang)</h2>
+                
+                <div id="tankImageContainer" class="image-container hidden">
+                    <!-- อย่าลืมเช็ค Path รูปภาพว่าถูกต้อง (เช่น ../images/tan.svg) -->
+                    <img src="../images/tan.svg" alt="Tank Diagram" onerror="this.src='https://placehold.co/600x200?text=Insert+tan.png'">
+                    
+                    <div id="labelX" class="overlay-label"></div>
+                    <div id="labelY" class="overlay-label"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tankLead">Lead:</label>
+                    <input type="number" id="tankLead" placeholder="เช่น 42.05" min="0" step="any">
+                </div>
+                <div class="form-group">
+                    <label for="tankX">ระยะ X (ความยาว Tank):</label>
+                    <input type="number" id="tankX" placeholder="เช่น 5" min="0" step="any">
+                    <span class="hint">*ใช้ค่ากลาง เช่น 6 +1/-0 ให้ใช้ 6.5</span>
+                </div>
+                <button onclick="calculateTank()" class="btn btn-calc" style="background-color: var(--success-color);">
+                    <i class="fas fa-compress-arrows-alt"></i> คำนวณมุมชดเชย
+                </button>
+                <div id="resultTank" class="calculator-result hidden"></div>
+            </div>
+
+        </div> 
+    </div>
+
+    <script>
+        let calculatedLeadValue = null;
+        const notificationEl = document.getElementById('notification');
+
+        function showNotification(message, type = 'success') {
+            notificationEl.innerHTML = message;
+            notificationEl.className = `notification ${type}`;
+            notificationEl.style.display = 'block';
+            setTimeout(() => { notificationEl.style.display = 'none'; }, 3000);
+        }
+
+        function formatDegree(decimalAngle) {
+            let degrees = Math.floor(decimalAngle);
+            let minutes = (decimalAngle - degrees) * 60;
+            let roundedMinutes = Math.floor(minutes); 
+
+            return `
+                <div style="font-size: 1.25em; font-weight:bold; color: var(--success-color); margin-bottom: 5px;">
+                    ${degrees}° ${roundedMinutes}'
+                </div>
+                <div style="font-size: 0.85em; color: var(--dark-gray);">
+                    (ทศนิยม: ${decimalAngle.toFixed(3)}°)
+                </div>
+            `;
+        }
+
+        function formatDegreeShort(decimalAngle) {
+            let degrees = Math.floor(decimalAngle);
+            let minutes = Math.floor((decimalAngle - degrees) * 60);
+            return `${degrees}° ${minutes}'`;
+        }
+
+        // 1. คำนวณ Lead
+        function calculateLead() {
+            const D = parseFloat(document.getElementById('D1').value);
+            const angleDeg = parseFloat(document.getElementById('angle').value);
+            const resultEl = document.getElementById('resultLead');
+            const useButton = document.getElementById('useLeadButton');
+
+            if (isNaN(D) || isNaN(angleDeg) || D <= 0 || angleDeg <= 0 || angleDeg >= 90) {
+                showNotification("กรุณาใส่ค่าให้ถูกต้อง", "error"); 
+                resultEl.classList.add('hidden');
+                useButton.classList.add('hidden');
+                return;
+            }
+
+            const angleRad = angleDeg * (Math.PI / 180);
+            const lead = (Math.PI * D) / Math.tan(angleRad);
+            
+            calculatedLeadValue = lead; 
+
+            resultEl.innerHTML = `Lead = <strong>${lead.toFixed(3)}</strong> mm.`; 
+            resultEl.classList.remove('hidden');
+            useButton.classList.remove('hidden');
+        }
+
+        // 2. คำนวณมุมเกลียว
+        function calculateAngle() {
+            const D = parseFloat(document.getElementById('D2').value);
+            const lead = parseFloat(document.getElementById('lead').value);
+            const resultEl = document.getElementById('resultAngle');
+
+            if (isNaN(D) || isNaN(lead) || D <= 0 || lead <= 0) {
+                showNotification("กรุณาใส่ค่าให้ถูกต้อง", "error");
+                resultEl.classList.add('hidden');
+                return;
+            }
+
+            const angleRad = Math.atan((Math.PI * D) / lead);
+            const angleDeg = angleRad * (180 / Math.PI);
+            
+            let d = Math.floor(angleDeg);
+            let m = Math.round((angleDeg - d) * 60);
+            if(m === 60) { d++; m = 0; }
+            
+            resultEl.innerHTML = `
+                <div style="font-size: 1.2em; font-weight:bold; margin-bottom: 5px;">${d}° ${m}'</div>
+                <div style="font-size: 0.9em; color: var(--dark-gray);">(หรือ ${angleDeg.toFixed(2)}°)</div>
+            `;
+            resultEl.classList.remove('hidden');
+        }
+
+        // 3. คำนวณมุม Tank (Tang)
+        function calculateTank() {
+            const lead = parseFloat(document.getElementById('tankLead').value);
+            const x = parseFloat(document.getElementById('tankX').value);
+            const resultEl = document.getElementById('resultTank');
+            const imgContainer = document.getElementById('tankImageContainer');
+            const labelX = document.getElementById('labelX');
+            const labelY = document.getElementById('labelY');
+
+            if (isNaN(lead) || isNaN(x) || lead <= 0) {
+                showNotification("กรุณาใส่ค่า Lead และ X ให้ถูกต้อง", "error");
+                resultEl.classList.add('hidden');
+                imgContainer.classList.add('hidden'); 
+                return;
+            }
+
+            const resultDeg = (x / lead) * 180;
+
+            resultEl.innerHTML = `Y (มุมชดเชย) = <br>` + formatDegree(resultDeg);
+            resultEl.classList.remove('hidden');
+
+            imgContainer.classList.remove('hidden');
+            
+            // ใส่ค่าตัวเลขเพียวๆ
+            labelX.textContent = x;
+            labelY.textContent = formatDegreeShort(resultDeg);
+        }
+        
+        function useCalculatedLead() {
+            if (calculatedLeadValue !== null) {
+                const val = calculatedLeadValue.toFixed(3);
+                document.getElementById('lead').value = val;
+                document.getElementById('tankLead').value = val;
+                
+                showNotification("นำค่า Lead ไปใส่ทุกช่องแล้ว", "success");
+            } else {
+                showNotification("กรุณาคำนวณ Lead ก่อน", "error");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            function bindEnter(id, func) {
+                document.getElementById(id).addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') { e.preventDefault(); func(); }
+                });
+            }
+
+            bindEnter('D1', calculateLead);
+            bindEnter('angle', calculateLead);
+            bindEnter('D2', calculateAngle);
+            bindEnter('lead', calculateAngle);
+            bindEnter('tankLead', calculateTank);
+            bindEnter('tankX', calculateTank);
+        });
+        
+    </script>
+
+</body>
+</html>

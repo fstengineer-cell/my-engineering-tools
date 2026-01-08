@@ -1,0 +1,76 @@
+/* --- ไฟล์ css/style.css --- */
+
+/* 1. ประกาศฟอนต์ทั้ง 7 น้ำหนัก */
+
+/* Thin (บางมาก - 100) */
+@font-face {
+    font-family: 'IBMPlexThai';
+    src: url('../fonts/IBMPlexSansThai-Thin.ttf') format('truetype');
+    font-weight: 100;
+    font-style: normal;
+}
+
+/* ExtraLight (บางพิเศษ - 200) */
+@font-face {
+    font-family: 'IBMPlexThai';
+    src: url('../fonts/IBMPlexSansThai-ExtraLight.ttf') format('truetype');
+    font-weight: 200;
+    font-style: normal;
+}
+
+/* Light (บาง - 300) */
+@font-face {
+    font-family: 'IBMPlexThai';
+    src: url('../fonts/IBMPlexSansThai-Light.ttf') format('truetype');
+    font-weight: 300;
+    font-style: normal;
+}
+
+/* Regular (ปกติ - 400) */
+@font-face {
+    font-family: 'IBMPlexThai';
+    src: url('../fonts/IBMPlexSansThai-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+/* Medium (กลาง - 500) */
+@font-face {
+    font-family: 'IBMPlexThai';
+    src: url('../fonts/IBMPlexSansThai-Medium.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
+/* SemiBold (หนากึ่งหนึ่ง - 600) */
+@font-face {
+    font-family: 'IBMPlexThai';
+    src: url('../fonts/IBMPlexSansThai-SemiBold.ttf') format('truetype');
+    font-weight: 600;
+    font-style: normal;
+}
+
+/* Bold (หนา - 700) */
+@font-face {
+    font-family: 'IBMPlexThai';
+    src: url('../fonts/IBMPlexSansThai-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+}
+
+
+/* 2. บังคับใช้กับทุกส่วนของเว็บ */
+body, button, input, select, textarea, h1, h2, h3, h4, h5, h6 {
+    /* ใช้ IBM Plex Thai เป็นอันดับแรก */
+    /* ถ้าหาไม่เจอ ให้ใช้ Tahoma (Windows) หรือ San Francisco/Helvetica (Apple) */
+    font-family: 'IBMPlexThai', 'Tahoma', 'Segoe UI', 'Helvetica Neue', sans-serif !important;
+}
+
+/* 3. ปรับแต่งเพิ่มเติม (Optional) ให้ดูสวยขึ้น */
+h1, h2, h3, strong, th {
+    font-weight: 600; /* ให้หัวข้อใช้ตัว SemiBold */
+}
+
+input, button {
+    font-weight: 400; /* ช่องกรอกใช้ตัวปกติ */
+}
