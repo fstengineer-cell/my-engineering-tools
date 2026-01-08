@@ -1,16 +1,22 @@
 {
   "name": "Engineering Tools Suite",
   "short_name": "EngTools",
-  "start_url": ".", 
+  "start_url": ".",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#0f172a", 
   "theme_color": "#0f172a",
   "icons": [
     {
       "src": "icon.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any" 
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
