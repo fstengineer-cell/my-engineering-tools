@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cutting Condition Calculator</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { primary: { 50:'#f0f9ff', 100:'#e0f2fe', 500:'#0ea5e9', 600:'#0284c7', 700:'#0369a1' } },
+                    fontFamily: { sans: ['Sarabun', 'sans-serif'] }
+                },
+            },
+        };
+    </script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600&family=Inter:wght@400;500&display=swap');
+        body { font-family: 'Sarabun', sans-serif; }
+        
+        /* UPDATED: ปรับขนาด Input ให้ใหญ่ขึ้น (py-3.5) และตัวอักษรใหญ่ขึ้น (text-lg) */
+        .input-active {
+            @apply w-full px-4 py-3.5 text-lg border border-slate-300 border-l-4 border-l-primary-500 rounded-r-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all text-slate-800 font-medium bg-white shadow-sm;
+        }
+        
+        .label-text { @apply block text-sm text-slate-600 mb-1 font-medium; }
+        
+        /* UPDATED: ปรับตำแหน่งหน่วย (Unit) ให้ตรงกับ Input ที่ใหญ่ขึ้น */
+        .unit-badge { @apply absolute right-3 top-10 text-sm text-slate-400 font-light pointer-events-none; }
+        
+        .section-header { @apply text-lg font-semibold text-slate-700 mb-4 border-b pb-2 flex items-center; }
+        .note-item { @apply flex items-start gap-3 p-3 bg-white rounded-lg border border-slate-100 shadow-sm; }
+        .note-icon { @apply w-8 h-8 flex items-center justify-center bg-primary-100 text-primary-600 rounded-full text-xs font-bold flex-shrink-0; }
+        .tip-card { @apply bg-white p-4 rounded-lg border-l-4 shadow-sm text-sm; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen p-2 md:p-4 flex justify-center items-start">
+
+    <div class="w-full max-w-3xl">
+        
+        <div class="bg-white p-4 md:p-6 rounded-xl shadow-lg mb-6 relative">
+            
+            <button onclick="resetForm()" class="absolute top-4 right-4 text-slate-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition-all" title="ล้างค่าทั้งหมด">
+                <i class="fas fa-undo-alt text-lg"></i>
+            </button>
+
+            <div class="mb-6 md:mb-8 text-center pt-2">
+                <h1 class="text-xl md:text-2xl font-bold text-slate-800 flex justify-center items-center gap-2">
+                    <i class="fas fa-calculator text-primary-600"></i> Cutting Calculator
+                </h1>
+                <p class="text-slate-500 text-xs md:text-sm font-light mt-1">กรอกข้อมูลช่องใดก็ได้ ระบบจะคำนวณค่าที่เหลือให้ทันที</p>
+            </div>
+
+            <div class="mb-6 md:mb-8">
+                <h2 class="section-header text-base md:text-lg">
+                    <i class="fas fa-tachometer-alt mr-2 text-primary-500"></i> Speed Parameters
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+                    <div class="relative">
+                        <label class="label-text">D (Tool Dia.)</label>
+                        <input type="number" id="inp_D" class="input-active" placeholder="mm" oninput="calcSpeed('D')">
+                        <span class="unit-badge">mm</span>
+                    </div>
+                    <div class="relative">
+                        <label class="label-text">Vc (Cutting Speed)</label>
+                        <input type="number" id="inp_Vc" class="input-active" placeholder="m/min" oninput="calcSpeed('Vc')">
+                        <span class="unit-badge">m/min</span>
+                    </div>
+                    <div class="relative">
+                        <label class="label-text">N (RPM)</label>
+                        <input type="number" id="inp_N" class="input-active" placeholder="rev/min" oninput="calcSpeed('N')">
+                        <span class="unit-badge">RPM</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6 md:mb-8">
+                <h2 class="section-header text-base md:text-lg">
+                    <i class="fas fa-forward mr-2 text-primary-500"></i> Feed Rate Parameters
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+                    <div class="relative">
+                        <label class="label-text">Z (Teeth)</label>
+                        <input type="number" id="inp_Z" class="input-active" placeholder="4" oninput="calcFeed('Z')">
+                        <span class="unit-badge">Flutes</span>
+                    </div>
+                    <div class="relative">
+                        <label class="label-text">fz (Feed/Tooth)</label>
+                        <input type="number" id="inp_fz" class="input-active" placeholder="mm/z" oninput="calcFeed('fz')">
+                        <span class="unit-badge">mm/z</span>
+                    </div>
+                    <div class="relative">
+                        <label class="label-text">F (Feed Rate)</label>
+                        <input type="number" id="inp_F" class="input-active" placeholder="mm/min" oninput="calcFeed('F')">
+                        <span class="unit-badge">mm/min</span>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h2 class="section-header text-base md:text-lg">
+                    <i class="fas fa-clock mr-2 text-primary-500"></i> Estimation Time
+                </h2>
+                <div class="flex flex-col md:flex-row gap-4 items-center bg-slate-50 p-4 rounded-lg border border-slate-200">
+                    <div class="w-full md:w-1/2 relative">
+                        <label class="label-text">L (Cutting Length)</label>
+                        <input type="number" id="inp_L" class="input-active" placeholder="ความยาวงานรวม" oninput="calcTime()">
+                        <span class="unit-badge">mm</span>
+                    </div>
+                    <div class="w-full md:w-1/2 text-center md:text-right mt-2 md:mt-0">
+                        <div class="text-sm text-slate-500 mb-1">Estimated Time</div>
+                        <div class="text-3xl font-bold text-primary-600 tracking-tight">
+                            <span id="res_min">0</span> <span class="text-base font-normal text-slate-400">m</span> : 
+                            <span id="res_sec">00</span> <span class="text-base font-normal text-slate-400">s</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bg-slate-50 p-4 md:p-6 rounded-xl border border-slate-200 mb-10">
+            
+            <h3 class="text-base md:text-lg font-semibold text-slate-700 mb-4 flex items-center">
+                <i class="fas fa-book-open mr-2 text-primary-500"></i> คำอธิบายตัวแปร
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-8">
+                <div class="note-item">
+                    <div class="note-icon">D</div>
+                    <div>
+                        <div class="font-bold text-slate-700 text-sm">Tool Diameter (mm)</div>
+                        <div class="text-xs text-slate-500 mt-1">ขนาดความโตของหัวกัด</div>
+                    </div>
+                </div>
+                <div class="note-item">
+                    <div class="note-icon">Vc</div>
+                    <div>
+                        <div class="font-bold text-slate-700 text-sm">Cutting Speed (m/min)</div>
+                        <div class="text-xs text-slate-500 mt-1">ความเร็วที่คมมีดวิ่งผ่านผิวงาน (ขึ้นอยู่กับชนิดวัสดุ)</div>
+                    </div>
+                </div>
+                <div class="note-item">
+                    <div class="note-icon">N</div>
+                    <div>
+                        <div class="font-bold text-slate-700 text-sm">Spindle Speed (RPM)</div>
+                        <div class="text-xs text-slate-500 mt-1">ความเร็วรอบการหมุนของหัวกัด (รอบต่อนาที)</div>
+                    </div>
+                </div>
+                <div class="note-item">
+                    <div class="note-icon">F</div>
+                    <div>
+                        <div class="font-bold text-slate-700 text-sm">Feed Rate (mm/min)</div>
+                        <div class="text-xs text-slate-500 mt-1">ความเร็วในการเดินงาน ยิ่งเยอะงานยิ่งเสร็จไว แต่ผิวจะหยาบ</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="text-base md:text-lg font-semibold text-slate-700 mb-4 flex items-center pt-6 border-t border-slate-200">
+                <i class="fas fa-tools mr-2 text-orange-500"></i> แนวทางการปรับค่าเมื่อเจอปัญหา
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                
+                <div class="tip-card border-l-yellow-400">
+                    <div class="flex items-center gap-2 mb-2 font-bold text-slate-700">
+                        <i class="fas fa-magic text-yellow-500"></i> ผิวงานเป็นรอย
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex justify-between items-center text-slate-600">
+                            <span>เพิ่มรอบ (N)</span>
+                            <span class="text-green-600 font-bold"><i class="fas fa-arrow-up"></i> สูงขึ้น</span>
+                        </div>
+                        <div class="flex justify-between items-center text-slate-600">
+                            <span>ลดฟีด (F)</span>
+                            <span class="text-red-500 font-bold"><i class="fas fa-arrow-down"></i> ลดลง</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tip-card border-l-red-500">
+                    <div class="flex items-center gap-2 mb-2 font-bold text-slate-700">
+                        <i class="fas fa-fire text-red-500"></i> ทูลไหม้ / สึกหรอ
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex justify-between items-center text-slate-600">
+                            <span>ลดรอบ (N, Vc)</span>
+                            <span class="text-red-500 font-bold"><i class="fas fa-arrow-down"></i> ลดลง</span>
+                        </div>
+                        <div class="text-xs text-slate-400 mt-1">*ความเร็วรอบสูงเกิดความร้อนสะสม</div>
+                    </div>
+                </div>
+
+                <div class="tip-card border-l-orange-500">
+                    <div class="flex items-center gap-2 mb-2 font-bold text-slate-700">
+                        <i class="fas fa-bolt text-orange-500"></i> เสียงดัง / งานสั่น
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex justify-between items-center text-slate-600">
+                            <span>ลดรอบ (N)</span>
+                            <span class="text-red-500 font-bold"><i class="fas fa-arrow-down"></i> ลดลง</span>
+                        </div>
+                        <div class="flex justify-between items-center text-slate-600">
+                            <span>เพิ่มฟีด (F)</span>
+                            <span class="text-green-600 font-bold"><i class="fas fa-arrow-up"></i> สูงขึ้น</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+        </div>
+    
+    <script>
+        const getVal = (id) => parseFloat(document.getElementById(id).value);
+        const setVal = (id, val) => {
+            const el = document.getElementById(id);
+            el.value = val;
+            el.classList.add('bg-sky-50', 'text-primary-700');
+            setTimeout(() => el.classList.remove('bg-sky-50', 'text-primary-700'), 500);
+        };
+
+        // NEW: Reset Function
+        function resetForm() {
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.value = '';
+                input.classList.remove('bg-sky-50', 'text-primary-700');
+            });
+            document.getElementById('res_min').innerText = "0";
+            document.getElementById('res_sec').innerText = "00";
+        }
+
+        function calcSpeed(source) {
+            const D = getVal('inp_D');
+            const Vc = getVal('inp_Vc');
+            const N = getVal('inp_N');
+
+            if (source === 'Vc' || source === 'D') {
+                if (D && Vc) {
+                    const resN = (Vc * 1000) / (Math.PI * D);
+                    setVal('inp_N', Math.round(resN));
+                    calcFeed('N_update');
+                }
+            } else if (source === 'N') {
+                if (D && N) {
+                    const resVc = (Math.PI * D * N) / 1000;
+                    setVal('inp_Vc', resVc.toFixed(1));
+                    calcFeed('N_update');
+                }
+            }
+        }
+
+        function calcFeed(source) {
+            const N = getVal('inp_N');
+            const Z = getVal('inp_Z');
+            const fz = getVal('inp_fz');
+            const F = getVal('inp_F');
+
+            if (source === 'N_update' || source === 'Z' || source === 'fz') {
+                if (N && Z && fz) {
+                    const resF = N * Z * fz;
+                    setVal('inp_F', Math.round(resF));
+                    calcTime();
+                }
+            } else if (source === 'F') {
+                if (N && Z && F) {
+                    const resFz = F / (N * Z);
+                    setVal('inp_fz', resFz.toFixed(4));
+                    calcTime();
+                }
+            }
+        }
+
+        function calcTime() {
+            const L = getVal('inp_L');
+            const F = getVal('inp_F');
+
+            if (L && F && F > 0) {
+                const totalMinutes = L / F;
+                const mins = Math.floor(totalMinutes);
+                const secs = Math.round((totalMinutes - mins) * 60);
+                document.getElementById('res_min').innerText = mins;
+                document.getElementById('res_sec').innerText = secs < 10 ? '0' + secs : secs;
+            } else {
+                document.getElementById('res_min').innerText = "0";
+                document.getElementById('res_sec').innerText = "00";
+            }
+        }
+    </script>
+</body>
+</html>
