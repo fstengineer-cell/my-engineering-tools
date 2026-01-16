@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Engineering Tools Suite</title>
+    
+    <script src="tailwindcss.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --sidebar-bg: #0f172a;
+            --sidebar-hover: #1e293b;
+            --accent-color: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.15);
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --body-bg: #f1f5f9;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body { 
+            background: var(--body-bg); 
+            height: 100vh; 
+            overflow: hidden; 
+            font-family: 'Inter', 'Prompt', sans-serif;
+            display: flex;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -320px; 
+            width: 280px;
+            height: 100%;
+            background: var(--sidebar-bg);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            transition: left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s;
+            z-index: 1000;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.2);
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .sidebar.active { left: 0; }
+        
+        .logo {
+            padding: 24px 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            background: linear-gradient(to bottom, #0f172a, #131c31);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--accent-color);
+            letter-spacing: 0.5px;
+        }
+        .logo i.main-icon { margin-right: 10px; filter: drop-shadow(0 0 5px rgba(56,189,248,0.5)); }
+
+        .search-box { padding: 15px 20px; }
+        .search-wrapper {
+            position: relative;
+            background: #1e293b;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .search-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 10px 10px 35px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: white;
+            font-family: inherit;
+            outline: none;
+            font-size: 0.9rem;
+        }
+        .search-input::placeholder { color: #64748b; }
+
+        .menu-list { 
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 10px 15px; 
+            scrollbar-width: thin;
+            scrollbar-color: #334155 transparent;
+        }
+        
+        .menu-list::-webkit-scrollbar { width: 6px; }
+        .menu-list::-webkit-scrollbar-thumb { background-color: #334155; border-radius: 20px; }
+
+        .menu-item {
+            padding: 12px 15px;
+            margin-bottom: 6px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-muted);
+            transition: all 0.25s ease;
+            font-size: 0.95rem;
+            font-weight: 400;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover {
+            background: var(--sidebar-hover);
+            color: white;
+            transform: translateX(3px);
+        }
+
+        .menu-item.active {
+            background: linear-gradient(90deg, var(--accent-glow), transparent);
+            color: var(--accent-color);
+            border-left-color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        .menu-item i { 
+            width: 24px; 
+            text-align: center; 
+            font-size: 1.1rem;
+        }
+
+        .main-content {
+            flex: 1;
+            height: 100%;
+            background: var(--body-bg);
+            position: relative;
+            padding: 0;
+            transition: margin-left 0.4s;
+        }
+        
+        @media (min-width: 1024px) {
+            .sidebar { left: 0; }
+            .main-content { margin-left: 280px; }
+            .sidebar-trigger, .toggle-btn, .overlay { display: none !important; }
+        }
+
+        iframe { 
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            display: block;
+        }
+
+        .sidebar-trigger {
+            position: fixed; top: 0; left: 0; width: 20px; height: 100%; z-index: 999;
+        }
+
+        .toggle-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(15, 23, 42, 0.9);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 900;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            backdrop-filter: blur(8px);
+            font-family: 'Prompt', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 998;
+            opacity: 0; visibility: hidden; transition: 0.3s;
+            backdrop-filter: blur(4px);
+        }
+        .overlay.active { opacity: 1; visibility: visible; }
+
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-trigger" onmouseover="openNav()"></div>
+
+    <button class="toggle-btn" onclick="openNav()">
+        <i class="fas fa-bars"></i> เมนู
+    </button>
+
+    <div class="overlay" onclick="closeNav()"></div>
+
+    <nav class="sidebar" id="sidebar" onmouseleave="closeNav()">
+        <div class="logo">
+            <span><i class="fas fa-drafting-compass main-icon"></i> Engineering Tools</span>
+            <i class="fas fa-chevron-left" onclick="closeNav()" style="cursor:pointer; color:#94a3b8; font-size: 0.9rem; display: none;" id="closeIcon"></i>
+        </div>
+        
+        <div class="search-box">
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" class="search-input" placeholder="ค้นหาเครื่องมือ..." onkeyup="filterMenu(this)">
+            </div>
+        </div>
+
+        <div class="menu-list" id="menuList">
+            <div class="menu-item active" onclick="loadTool(this, 'programs/copypaste.html')">
+                <i class="fas fa-copy"></i> Copy & Paste
+            </div>
+            <div class="menu-item" onclick="loadTool(this, 'programs/coating.html')">
+                <i class="fas fa-layer-group"></i> Coating
+            </div>
+            <div class="menu-item" onclick="loadTool(this, 'programs/unit-converter.html')">
+                <i class="fas fa-exchange-alt"></i> Unit Converter
+            </div>
+            <div class="menu-item" onclick="loadTool(this, 'programs/tolerance.html')">
+                <i class="fas fa-ruler-combined"></i> Tolerance
+            </div>
+            <div class="menu-item" onclick="loadTool(this, 'programs/lead.html')">
+                <i class="fas fa-hurricane"></i> Lead
+            </div>
+            <div class="menu-item" onclick="loadTool(this, 'programs/rrc.html')">
+                <i class="fas fa-circle-notch"></i> RRC
+            </div>
+            <div class="menu-item" onclick="loadTool(this, 'programs/runout-lipheight.html')">
+                <i class="fas fa-arrows-spin"></i> Run out & Lip Height
+            </div>
+            <div class="menu-item" onclick="loadTool(this, 'programs/oil-hole-ratio.html')">
+                <i class="fas fa-percent"></i> Oil Hole Ratio
+            </div>
+            <div class="menu-item" onclick="loadTool(this, 'programs/vcut-pattern-selector.html')">
+                <i class="fas fa-cut"></i> V-Cut Selector
+            </div>
+            <div class="menu-item" onclick="loadTool(this, 'programs/cutcon.html')">
+                <i class="fas fa-calculator"></i> Cutting Calculator
+            </div>
+            <div class="menu-item" onclick="loadTool(this, 'programs/oil-hole-endmill.html')">
+                <i class="fas fa-bore-hole"></i> Oil Hole Endmill
+            </div>
+            <div class="menu-item" onclick="loadTool(this, 'programs/oil-hole-spiral-angle.html')">
+                <i class="fas fa-tornado"></i> Oil Hole Spiral Angle
+            </div>
+            <div class="menu-item" onclick="loadTool(this, 'programs/yakibame.html')">
+                <i class="fas fa-fire"></i> Yakibame
+            </div>
+            <div class="menu-item" onclick="loadTool(this, 'programs/geometry.html')">
+                <i class="fas fa-shapes"></i> Geometry & Trig
+            </div>
+            <div class="menu-item" onclick="loadTool(this, 'programs/cylinder-weight-calculator.html')">
+                <i class="fas fa-weight-hanging"></i> Cylinder Weight
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <iframe id="appFrame" src="programs/copypaste.html" title="Tool Display"></iframe>
+    </main>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.querySelector('.overlay');
+        const closeIcon = document.getElementById('closeIcon');
+
+        function openNav() {
+            if (window.innerWidth < 1024) {
+                sidebar.classList.add('active');
+                overlay.classList.add('active');
+                closeIcon.style.display = 'block';
+            }
+        }
+
+        function closeNav() {
+            if (window.innerWidth < 1024) {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+                closeIcon.style.display = 'none';
+            }
+        }
+
+        window.onload = function() {
+            if(window.innerWidth < 1024) {
+                setTimeout(closeNav, 500);
+            }
+        };
+
+        function loadTool(element, path) {
+            document.getElementById('appFrame').src = path;
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            closeNav();
+        }
+
+        function filterMenu(input) {
+            const filter = input.value.toUpperCase();
+            const items = document.getElementById("menuList").getElementsByClassName("menu-item");
+            for (let i = 0; i < items.length; i++) {
+                const txtValue = items[i].innerText;
+                items[i].style.display = txtValue.toUpperCase().indexOf(filter) > -1 ? "flex" : "none";
+            }
+        }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('Offline system ready.'))
+                    .catch(err => console.error('Offline system failed.', err));
+            });
+        }
+    </script>
+</body>
+</html>
