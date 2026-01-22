@@ -101,7 +101,7 @@
             display: block;
         }
 
-        /* --- Floating Input Logic (Updated Style) --- */
+        /* --- Floating Input Logic --- */
         .floating-input {
             position: absolute;
             width: 60px;
@@ -115,20 +115,15 @@
             cursor: text;
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             border-radius: 6px;
-            
-            /* 1. Before Input: Gray Background, No Border */
             background-color: #e2e8f0; 
             border: none;
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
 
-        /* 2. After Input (Has Value): Transparent Background */
         .floating-input:not(:placeholder-shown) {
             background-color: transparent;
             border: none;
             box-shadow: none;
-            
-            /* Text Style on Transparent BG */
             color: var(--primary);
             font-weight: 600;
             text-shadow: 
@@ -138,7 +133,6 @@
                  1px  1px 0 rgba(255,255,255,0.9);
         }
 
-        /* 3. Interaction (Hover/Focus): Active State */
         .floating-input:hover,
         .floating-input:focus {
             background-color: #fff;
@@ -168,11 +162,11 @@
             background: transparent;
             border: none;
             color: #0f172a;
-            font-weight: 500;
-            font-size: 1rem;
+            font-weight: 600; /* ทำให้ตัวหนาขึ้นเล็กน้อย */
+            font-size: 1.1rem; /* เพิ่มขนาดเล็กน้อยให้อ่านง่าย */
             transform: translate(-50%, -50%);
             opacity: 0;
-            transition: all 0.3s ease;
+            transition: opacity 0.3s ease;
             white-space: nowrap;
             pointer-events: none;
             text-shadow: 
@@ -182,9 +176,10 @@
                  1px  1px 0 rgba(255,255,255,0.9);
         }
 
+        /* [แก้ไข] ลบ transform ออกเพื่อไม่ให้ทับ style inline และเพิ่ม z-index */
         .overlay-text.show {
             opacity: 1;
-            transform: translate(-50%, -50%) scale(1.0);
+            z-index: 20; 
         }
 
         /* --- Status Bar --- */
@@ -247,7 +242,7 @@
             font-weight: 400;
         }
 
-        /* --- Responsive (Mobile Safe) --- */
+        /* --- Responsive --- */
         @media (max-width: 1024px) {
             .main-wrapper {
                 grid-template-columns: 1fr; 
@@ -350,6 +345,7 @@
                     <img src="../images/pata.svg" alt="Pattern A" style="width: 100%; opacity: 0.9;" onerror="this.src='https://placehold.co/680x450?text=Pattern+A+Large'">
                     
                     <div id="ov-K" class="overlay-text" style="top: 13%; left: 39%; transform: translate(-50%, -50%) rotate(-45deg);"></div>
+                    
                     <div id="ov-N-A" class="overlay-text" style="top: 20%; left: 55%; transform: translate(-50%, -50%) rotate(45deg);"></div>
                     <div id="ov-P-A" class="overlay-text" style="top: 89.5%; left: 85%;"></div>
                 </div>
@@ -409,7 +405,6 @@
         }
 
         msgBox.innerText = "";
-        
         W_el.innerText = W.toFixed(1);
         D_el.innerText = D.toFixed(1);
         C_el.innerText = C;
@@ -418,7 +413,7 @@
     }
 
     /* ============================================
-                  V-CUT LOGIC
+                  V-CUT LOGIC (FINAL FIXED)
     ============================================ */
     const kTable = {
         0.8: 1.5, 1.0: 2.0, 1.2: 2.0, 1.4: 2.5, 1.5: 2.5,
@@ -435,6 +430,7 @@
         const boxB = document.getElementById("pattern-box-B");
         const overlays = document.querySelectorAll(".pattern-box .overlay-text"); 
 
+        // 1. ตรวจสอบค่า Input
         if (isNaN(tk) || isNaN(d) || isNaN(ds)) {
             boxA.classList.add("active");
             boxB.classList.remove("active");
@@ -446,37 +442,53 @@
             return;
         }
 
-        const N = tk + d + 2;
-        const P = (ds / 2) * Math.tan(Math.PI/6) + 3;
+        // 2. คำนวณ N
+        const N = tk + d + 2.0;
+
+        // 3. คำนวณ P (เพื่อแสดงผล)
+        const P_Dimension = (ds / 2) * Math.tan(Math.PI/6) + 3;
         
+        // 4. คำนวณ K (ดึงค่าจาก Table)
         const dKey = d.toFixed(1);
         const K = kTable[parseFloat(dKey)] || "-"; 
 
+        // Update Status Bar
         document.getElementById("dispN").innerText = N.toFixed(2);
-        document.getElementById("dispP").innerText = P.toFixed(2);
+        document.getElementById("dispP").innerText = P_Dimension.toFixed(2);
         document.getElementById("dispK").innerText = K;
 
-        document.getElementById("ov-K").innerText = K;
+        // Update Overlays
+        const ovK = document.getElementById("ov-K");
+        if(ovK) ovK.innerText = K; // แสดงค่า K บนรูป
         
         const nText = " " + N.toFixed(1);
         document.getElementById("ov-N-A").innerText = nText;
         document.getElementById("ov-N-B").innerText = nText;
 
-        const pText = "( " + P.toFixed(1) + " )";
+        const pText = "( " + P_Dimension.toFixed(1) + " )";
         document.getElementById("ov-P-A").innerText = pText;
         document.getElementById("ov-P-B").innerText = pText;
 
-        if (N > P) {
+        // 5. Pattern Logic (สูตรใหม่)
+        // เทียบ N กับ รัศมีก้าน (ds/2)
+        const checkVal = ds / 2.0;
+
+        // Reset state ก่อน
+        boxA.classList.remove("active");
+        boxB.classList.remove("active");
+
+        if (N > checkVal) {
+            // N มากกว่า -> ใช้ Pattern A
             boxA.classList.add("active");
-            boxB.classList.remove("active");
         } else {
-            boxA.classList.remove("active");
+            // N น้อยกว่าหรือเท่ากับ -> ใช้ Pattern B
             boxB.classList.add("active");
         }
 
-        setTimeout(() => {
+        // แสดงผลตัวเลข (Delay เล็กน้อยเพื่อให้ CSS Animation ทำงานเนียนขึ้น)
+        requestAnimationFrame(() => {
             overlays.forEach(o => o.classList.add("show"));
-        }, 50);
+        });
     }
 </script>
 
