@@ -29,7 +29,7 @@
             margin: 0;
             padding: 15px;
             font-weight: 300;
-            overflow-x: hidden; /* ป้องกัน scroll แนวนอน */
+            overflow-x: hidden; 
         }
 
         .container {
@@ -62,7 +62,7 @@
             border: 1px dashed #cbd5e1;
             border-radius: 12px;
             position: relative;
-            overflow: hidden; /* คุมไม่ให้ส่วนที่เกิน scale หลุดออกมา */
+            overflow: hidden; 
             display: flex;
             justify-content: center;
         }
@@ -71,10 +71,10 @@
             position: absolute;
             top: 0;
             left: 50%;
-            width: 700px; /* ขนาดความกว้างอ้างอิงของรูปต้นฉบับ */
-            height: 400px; /* ขนาดความสูงอ้างอิง */
+            width: 700px; 
+            height: 400px; 
             transform-origin: top center;
-            margin-left: -350px; /* ครึ่งหนึ่งของ width เพื่อให้อยู่ตรงกลาง */
+            margin-left: -350px; 
             transition: transform 0.2s ease-out;
         }
 
@@ -147,9 +147,10 @@
         }
 
         .mini-guide {
-            font-size: 0.7rem; color: #d97706; margin-top: 4px; cursor: pointer;
+            font-size: 0.75rem; color: #d97706; margin-top: 4px; cursor: pointer;
             text-decoration: underline; display: none; background: #fffbeb;
             padding: 2px 6px; border-radius: 4px; border: 1px dashed #d97706;
+            white-space: nowrap;
         }
 
         /* --- Result Section --- */
@@ -189,13 +190,16 @@
                 <div id="pos-output-dia" class="floating-group">
                     <div class="input-label-tag tag-out">Output Ø</div>
                     <input type="number" id="outputDia" class="floating-input" placeholder="0.0" step="0.1" inputmode="decimal">
+                    <div id="maxDiaGuide" class="mini-guide" onclick="useSuggestedDia()">
+                        แนะนำ: Ø <span id="suggestedDiaVal">-</span>
+                    </div>
                 </div>
 
                 <div id="pos-hole-count" class="floating-group">
                     <input type="number" id="outputCount" class="floating-input" placeholder="0" step="1" inputmode="numeric">
                     <div class="input-label-tag tag-out" style="margin-top: 5px;">จำนวนรู</div>
                     <div id="maxHoleGuide" class="mini-guide" onclick="useMaxHoles()">
-                        max: <span id="maxHoleVal">0</span>
+                        max: <span id="maxHoleVal">0</span> รู
                     </div>
                 </div>
 
@@ -231,6 +235,9 @@
     const drawingWrapper = document.getElementById('drawingWrapper');
     const diagramContainer = document.getElementById('diagramContainer');
 
+    // Standard drill sizes array as requested
+    const STANDARD_DIAS = [0.8, 1.0, 1.2, 1.4, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.5, 3.0];
+
     function updateLayout() {
         if (!diagramContainer || !drawingWrapper) return;
         const availableWidth = diagramContainer.clientWidth;
@@ -261,22 +268,57 @@
         const outputCount = parseFloat(document.getElementById('outputCount').value);
 
         const pi = Math.PI;
-        const guideBox = document.getElementById('maxHoleGuide');
+
+        // -------------------------------------------------------------
+        // 1. Suggest Max Hole Count (Needs Input Dia & Output Dia)
+        // -------------------------------------------------------------
+        const holeGuideBox = document.getElementById('maxHoleGuide');
         const maxHoleVal = document.getElementById('maxHoleVal');
         
-        // Calculate Max Holes Guide
-        if (!isNaN(inputDia) && !isNaN(outputDia) && outputDia > 0) {
-            let areaInput = pi * Math.pow((inputDia / 2), 2);
-            let areaOutputSingle = pi * Math.pow((outputDia / 2), 2);
-            maxHoleVal.innerText = Math.floor(areaInput / areaOutputSingle);
-            guideBox.style.display = 'block'; 
+        if (!isNaN(inputDia) && inputDia > 0 && !isNaN(outputDia) && outputDia > 0) {
+            let maxHoles = Math.floor(Math.pow(inputDia, 2) / Math.pow(outputDia, 2));
+            maxHoleVal.innerText = maxHoles;
+            holeGuideBox.style.display = 'block'; 
         } else {
-            guideBox.style.display = 'none';
+            holeGuideBox.style.display = 'none';
         }
 
+        // -------------------------------------------------------------
+        // 2. Suggest Max Output Dia (Needs Input Dia & Output Count)
+        // -------------------------------------------------------------
+        const diaGuideBox = document.getElementById('maxDiaGuide');
+        const suggestedDiaVal = document.getElementById('suggestedDiaVal');
+
+        if (!isNaN(inputDia) && inputDia > 0 && !isNaN(outputCount) && outputCount > 0) {
+            // สูตร: OutputDia <= InputDia / sqrt(OutputCount)
+            let theoreticalMaxDia = inputDia / Math.sqrt(outputCount);
+            let suggestedDia = 0;
+
+            // วนหาขนาดมาตรฐานที่ใหญ่ที่สุด ที่ไม่เกินค่า Theoretical Max
+            for (let i = STANDARD_DIAS.length - 1; i >= 0; i--) {
+                if (STANDARD_DIAS[i] <= theoreticalMaxDia) {
+                    suggestedDia = STANDARD_DIAS[i];
+                    break;
+                }
+            }
+
+            if (suggestedDia > 0) {
+                suggestedDiaVal.innerText = suggestedDia.toFixed(1);
+                diaGuideBox.style.display = 'block';
+            } else {
+                diaGuideBox.style.display = 'none'; // กรณีที่เล็กกว่า 0.8 
+            }
+        } else {
+            diaGuideBox.style.display = 'none';
+        }
+
+        // -------------------------------------------------------------
+        // 3. Final Evaluation Area (Needs all 3 inputs to evaluate)
+        // -------------------------------------------------------------
         if (isNaN(inputDia) || isNaN(outputDia) || isNaN(outputCount)) {
             resetDisplay();
-            if(!isNaN(inputDia)) {
+            // Show only Input Area if Input Dia is provided
+            if(!isNaN(inputDia) && inputDia > 0) {
                  document.getElementById('dispInput').innerText = (pi * Math.pow((inputDia / 2), 2)).toFixed(2);
             }
             return;
@@ -302,9 +344,22 @@
 
     function useMaxHoles() {
         const input = document.getElementById('outputCount');
-        input.value = document.getElementById('maxHoleVal').innerText;
-        input.classList.add('has-value');
-        calculate();
+        const val = document.getElementById('maxHoleVal').innerText;
+        if(val > 0) {
+            input.value = val;
+            input.classList.add('has-value');
+            calculate();
+        }
+    }
+
+    function useSuggestedDia() {
+        const input = document.getElementById('outputDia');
+        const val = document.getElementById('suggestedDiaVal').innerText;
+        if(val !== "-") {
+            input.value = val;
+            input.classList.add('has-value');
+            calculate();
+        }
     }
 
     function resetDisplay() {
