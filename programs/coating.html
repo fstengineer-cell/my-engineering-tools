@@ -1,13 +1,21 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Engineering Tools: Pre-Coating Calculator</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Engineering Tools Suite</title>
+    
+    <script src="tailwindcss.js"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         /* --- 1. CORE THEME --- */
@@ -115,6 +123,38 @@
         .toggle-btn { background: none; border: none; color: #718096; cursor: pointer; font-size: 0.9rem; text-decoration: underline; margin-top: 15px; width: 100%; }
         
         .coating-info { font-size: 0.85rem; color: #4a5568; margin-top: 15px; padding: 12px; background: #f7fafc; border: 1px dashed #cbd5e1; border-radius: 8px; line-height: 1.6; }
+
+        /* =========================================
+           Mobile Fix: ปรับขนาดตัวเลขผลลัพธ์ไม่ให้ล้นกรอบ
+           ========================================= */
+        @media (max-width: 600px) {
+            /* 1. ลดขนาดตัวเลขหลัก (เช่น 16.792) */
+            .drawing-dia { 
+                font-size: 1.35rem !important; 
+            }
+            
+            /* 2. ลดขนาดตัวเลข Tolerance (+0.0 / -0.0) */
+            .drawing-tol-stack { 
+                font-size: 0.75rem !important; 
+            }
+            
+            /* 3. ลดช่องว่างระหว่างตัวเลขหลักและ Tol */
+            .drawing-display { 
+                gap: 4px !important; 
+            }
+            
+            /* 4. ลด Padding และ Margin ของการ์ด เพื่อเพิ่มพื้นที่ด้านใน */
+            .result-card { 
+                padding: 10px 5px !important; 
+                margin: 10px 8px !important; 
+            }
+            
+            /* 5. ลดขนาดหัวข้อ TARGET: MIN/MAX */
+            .res-title { 
+                font-size: 0.65rem !important; 
+                letter-spacing: 0px !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -297,6 +337,13 @@
         let val = Math.round(num * 1000) / 1000;
         let str = val.toFixed(3);
         return (forcePlus && val > 0) ? "+" + str : (val === 0 ? "0.000" : str);
+    }
+
+    function clearResults() {
+        const ids = ['norm_neg_base','norm_neg_top','norm_neg_bot','norm_pos_base','norm_pos_top','norm_pos_bot',
+                     'prec_neg_base','prec_neg_top','prec_neg_bot','prec_pos_base','prec_pos_top','prec_pos_bot'];
+        ids.forEach(id => document.getElementById(id).innerText = "-");
+        document.getElementById('statusDisplay').style.display = 'none';
     }
 
     function calculate() {
