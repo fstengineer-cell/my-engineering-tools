@@ -12,7 +12,7 @@
     <script src="tailwindcss.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -25,9 +25,64 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #f1f5f9; height: 100vh; overflow: hidden; font-family: 'Inter', 'Prompt', sans-serif; display: flex; }
+        body { background: #f1f5f9; height: 100vh; overflow: hidden; font-family: 'Inter', 'Prompt', sans-serif; display: flex; position: relative; }
 
-        /* --- Sidebar --- */
+        /* =========================================
+           HOME SCREEN (DASHBOARD)
+           ========================================= */
+        .home-screen {
+            position: fixed; inset: 0; z-index: 2000;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            overflow-y: auto; display: flex; flex-direction: column; align-items: center;
+            padding: 60px 20px;
+            transition: opacity 0.4s ease, visibility 0.4s ease, transform 0.4s ease;
+        }
+        
+        .home-screen.hidden { 
+            opacity: 0; visibility: hidden; pointer-events: none; 
+            transform: scale(1.05); /* เอฟเฟกต์ซูมออกนิดๆ ตอนเปลี่ยนหน้า */
+        }
+
+        .home-header { text-align: center; margin-bottom: 40px; color: white; animation: fadeInDown 0.6s ease; }
+        .home-header h1 { font-size: 2.5rem; font-weight: 600; color: var(--accent); margin-bottom: 10px; font-family: 'Prompt', sans-serif;}
+        .home-header p { color: var(--text-muted); font-size: 1.1rem; }
+
+        .home-search {
+            width: 100%; max-width: 600px; margin: 0 auto 40px;
+            position: relative; animation: fadeInUp 0.6s ease;
+        }
+        .home-search i { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 1.2rem; }
+        .home-search input {
+            width: 100%; padding: 18px 20px 18px 50px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05); color: white; outline: none; font-size: 1.1rem;
+            backdrop-filter: blur(10px); transition: all 0.3s;
+        }
+        .home-search input:focus { background: rgba(255,255,255,0.1); border-color: var(--accent); box-shadow: 0 0 20px rgba(56, 189, 248, 0.2); }
+
+        .home-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px; width: 100%; max-width: 1100px; animation: fadeInUp 0.8s ease;
+        }
+
+        .home-card {
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px; padding: 30px 20px; text-align: center; cursor: pointer;
+            transition: all 0.3s ease; backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .home-card:hover {
+            background: rgba(56, 189, 248, 0.08); border-color: rgba(56, 189, 248, 0.3);
+            transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .card-icon { font-size: 2.8rem; color: var(--accent); margin-bottom: 15px; }
+        .card-title { color: white; font-weight: 500; font-size: 1.1rem; font-family: 'Prompt', sans-serif;}
+
+        @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+
+        /* =========================================
+           APP LAYOUT (SIDEBAR & IFRAME)
+           ========================================= */
         .sidebar {
             position: fixed; top: 0; left: -320px; width: 280px; height: 100%;
             background: var(--sidebar-bg); color: var(--text-main);
@@ -63,7 +118,7 @@
         .menu-item i { width: 24px; text-align: center; font-size: 1.1rem; }
 
         .main-content { flex: 1; height: 100%; position: relative; }
-        iframe { width: 100%; height: 100%; border: none; display: block; }
+        iframe { width: 100%; height: 100%; border: none; display: block; background: #f1f5f9;}
 
         @media (min-width: 1024px) {
             .sidebar { left: 0; }
@@ -87,6 +142,21 @@
 </head>
 <body>
 
+    <div id="homeScreen" class="home-screen">
+        <div class="home-header">
+            <h1><i class="fas fa-drafting-compass text-sky-400 mr-2"></i> Engineering Tools</h1>
+            <p>รวมเครื่องมือคำนวณสำหรับวิศวกรและช่างเทคนิค</p>
+        </div>
+
+        <div class="home-search">
+            <i class="fas fa-search"></i>
+            <input type="text" placeholder="ค้นหาโปรแกรมที่ต้องการ..." onkeyup="filterHome(this.value)">
+        </div>
+
+        <div class="home-grid" id="homeGrid"></div>
+    </div>
+
+
     <div class="overlay" onclick="toggleNav(false)"></div>
     
     <button class="btn-mobile" onclick="toggleNav(true)">
@@ -95,7 +165,9 @@
 
     <nav class="sidebar" id="sidebar">
         <div class="logo">
-            <span><i class="fas fa-drafting-compass mr-2"></i> Engineering Tools</span>
+            <span class="cursor-pointer" onclick="goHome()" title="กลับหน้าแรก">
+                <i class="fas fa-home text-white mr-2 hover:text-sky-400 transition"></i> Tools Suite
+            </span>
             <i class="fas fa-times lg:hidden cursor-pointer text-slate-500" onclick="toggleNav(false)"></i>
         </div>
         
@@ -107,7 +179,11 @@
         </div>
 
         <div class="menu-list" id="menuList">
-            <div class="menu-item active" onclick="loadTool(this, 'programs/coating.html')">
+            <div class="menu-item" onclick="goHome()" style="color: white; border-bottom: 1px solid #334155; margin-bottom: 15px; padding-bottom: 15px;">
+                <i class="fas fa-home"></i> กลับหน้าแรก (Home)
+            </div>
+
+            <div class="menu-item" onclick="loadTool(this, 'programs/coating.html')">
                 <i class="fas fa-layer-group"></i> Coating
             </div>
             <div class="menu-item" onclick="loadTool(this, 'programs/lead.html')">
@@ -156,35 +232,105 @@
     </nav>
 
     <main class="main-content">
-        <iframe id="appFrame" src="programs/coating.html"></iframe>
+        <iframe id="appFrame" src=""></iframe>
     </main>
 
     <script>
         const sidebar = document.getElementById('sidebar');
         const overlay = document.querySelector('.overlay');
+        const homeScreen = document.getElementById('homeScreen');
+        const appFrame = document.getElementById('appFrame');
 
-        // Lean Toggle Function
+        // 1. ฟังก์ชันสร้างการ์ดหน้า Home อัตโนมัติจากเมนูซ้าย
+        function generateHomeGrid() {
+            const grid = document.getElementById('homeGrid');
+            const items = document.querySelectorAll('.menu-list .menu-item');
+            
+            items.forEach((item, index) => {
+                // ข้ามปุ่ม "กลับหน้าแรก"
+                if(item.innerText.includes('กลับหน้าแรก')) return;
+
+                // กำหนด ID ให้เมนูเพื่อให้กดการ์ดแล้วไปอัปเดตเมนูได้
+                const itemId = 'menu-item-' + index;
+                item.id = itemId;
+                
+                const iconHtml = item.querySelector('i').outerHTML;
+                const title = item.innerText.trim();
+                
+                // ดึง Path ของไฟล์
+                const onclickAttr = item.getAttribute('onclick');
+                const pathMatch = onclickAttr.match(/'([^']+)'/);
+                const path = pathMatch ? pathMatch[1] : '';
+
+                // สร้างการ์ด
+                const card = document.createElement('div');
+                card.className = 'home-card';
+                card.onclick = () => {
+                    loadTool(document.getElementById(itemId), path);
+                };
+                
+                card.innerHTML = `
+                    <div class="card-icon">${iconHtml}</div>
+                    <div class="card-title">${title}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 2. ฟังก์ชันโหลดโปรแกรม และซ่อนหน้า Home
+        function loadTool(element, path) {
+            // โหลด iframe
+            appFrame.src = path;
+            
+            // อัปเดตแถบสีน้ำเงินในเมนูด้านซ้าย
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            
+            // ปิดเมนูมือถือ (ถ้าเปิดอยู่)
+            if (window.innerWidth < 1024) toggleNav(false);
+
+            // ซ่อนหน้า Home Screen ด้วยเอฟเฟกต์เฟด
+            homeScreen.classList.add('hidden');
+        }
+
+        // 3. ฟังก์ชันกลับหน้า Home
+        function goHome() {
+            homeScreen.classList.remove('hidden');
+            appFrame.src = ''; // เคลียร์หน้าจอเดิม
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            if (window.innerWidth < 1024) toggleNav(false);
+        }
+
         function toggleNav(isOpen) {
             sidebar.classList.toggle('active', isOpen);
             overlay.classList.toggle('active', isOpen);
         }
 
-        function loadTool(element, path) {
-            document.getElementById('appFrame').src = path;
-            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-            if (window.innerWidth < 1024) toggleNav(false);
-        }
-
+        // ฟังก์ชันค้นหาใน Sidebar
         function filterMenu(query) {
             const filter = query.toUpperCase();
-            document.querySelectorAll(".menu-item").forEach(item => {
+            document.querySelectorAll("#menuList .menu-item").forEach(item => {
+                if(item.innerText.includes('กลับหน้าแรก')) return; // ไม่ซ่อนปุ่มโฮม
                 const text = item.innerText.toUpperCase();
                 item.style.display = text.includes(filter) ? "flex" : "none";
             });
         }
 
-        // SW Register
+        // ฟังก์ชันค้นหาในหน้า Home Screen
+        function filterHome(query) {
+            const filter = query.toUpperCase();
+            document.querySelectorAll(".home-card").forEach(card => {
+                const text = card.innerText.toUpperCase();
+                card.style.display = text.includes(filter) ? "flex" : "none";
+            });
+        }
+
+        // รันฟังก์ชันสร้างการ์ดเมื่อเปิดเว็บ
+        window.addEventListener('load', () => {
+            generateHomeGrid();
+        });
+
+        // SW Register (สำหรับ Offline)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').catch(console.error);
