@@ -26,7 +26,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
-            max-width: 1400px; /* ปรับลดขนาดลงเล็กน้อยเพื่อให้ 3 กล่องเรียงสวย */
+            max-width: 1400px;
             width: 100%;
             align-items: start;
         }
@@ -402,12 +402,15 @@
 
     function formatSign(num) { if (Number(num.toFixed(3)) === 0) return "0"; return (num > 0 ? "+" : "") + num.toFixed(3); }
     function round3(num) { return Math.round(num * 1000) / 1000; }
+    
+    // ฟังก์ชันดึง Index อิงตามมาตรฐาน ISO
     function getIsoIndex(d) {
-        if(d <= 3) return 0; if(d <= 6) return 1; if(d <= 10) return 2; if(d <= 14) return 3; if(d <= 18) return 4;
-        if(d <= 24) return 5; if(d <= 30) return 6; if(d <= 40) return 7; if(d <= 50) return 8; if(d <= 65) return 9;
-        if(d <= 80) return 10; if(d <= 100) return 11; if(d <= 120) return 12; if(d <= 140) return 13; if(d <= 160) return 14;
-        if(d <= 180) return 15; if(d <= 200) return 16; if(d <= 225) return 17; if(d <= 250) return 18; if(d <= 280) return 19;
-        if(d <= 315) return 20; if(d <= 355) return 21; if(d <= 400) return 22; if(d <= 450) return 23; if(d <= 500) return 24;
+        if(d <= 0 || d > 500) return -1;
+        for(let i = 0; i < isoData.ranges.length; i++) {
+            if(d <= isoData.ranges[i]) {
+                return i;
+            }
+        }
         return -1;
     }
 
@@ -416,9 +419,11 @@
         e.preventDefault();
         const d = parseFloat(document.getElementById('isoDia').value);
         const g = document.getElementById('isoGrade').value;
-        if(!g || isNaN(d) || d > 500 || d < 0) { alert("กรุณาระบุ Diameter (0-500mm) และเกรดให้ถูกต้อง"); return; }
+        if(!g || isNaN(d) || d > 500 || d <= 0) { alert("กรุณาระบุ Diameter (0.001-500mm) และเกรดให้ถูกต้อง"); return; }
+        
         const idx = getIsoIndex(d);
-        if(idx === -1) return;
+        if(idx === -1) { alert("Diameter อยู่นอกเหนือตาราง"); return; }
+        
         const vals = isoData.fits[g];
         isoRes = { dia: d, up: vals[idx * 2] / 1000, lo: vals[idx * 2 + 1] / 1000 };
         document.getElementById('isoResDia').textContent = "Ø" + d;
@@ -441,6 +446,8 @@
         const dia = parseFloat(document.getElementById('diameter').value);
         const up = parseFloat(document.getElementById('tolUpper').value);
         const lo = parseFloat(document.getElementById('tolLower').value);
+
+        if(isNaN(dia) || isNaN(up) || isNaN(lo)) { alert("กรุณากรอกข้อมูล Tool ให้ครบ"); return; }
 
         let k = (toolType === "reamer") ? 0.75 : 0.65;
         const range = round3(up - lo);
@@ -497,6 +504,7 @@
             return;
         }
 
+        // ค่าพิกัดแท้จริง
         const actMax = round3(d + up);
         const actMin = round3(d + lo);
         const range = round3(Math.abs(up - lo));
