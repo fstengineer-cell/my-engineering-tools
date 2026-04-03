@@ -40,7 +40,7 @@
         
         .home-screen.hidden { 
             opacity: 0; visibility: hidden; pointer-events: none; 
-            transform: scale(1.05); /* เอฟเฟกต์ซูมออกนิดๆ ตอนเปลี่ยนหน้า */
+            transform: scale(1.05);
         }
 
         .home-header { text-align: center; margin-bottom: 40px; color: white; animation: fadeInDown 0.6s ease; }
@@ -138,6 +138,38 @@
             opacity: 0; visibility: hidden; transition: 0.3s; backdrop-filter: blur(4px);
         }
         .overlay.active { opacity: 1; visibility: visible; }
+
+        /* =========================================
+           MOBILE RESPONSIVE TWEAKS (2 Columns on Mobile)
+           ========================================= */
+        @media (max-width: 600px) {
+            .home-screen {
+                padding: 40px 15px; 
+            }
+            .home-header h1 {
+                font-size: 1.8rem;
+            }
+            .home-header p {
+                font-size: 0.95rem;
+            }
+            .home-grid {
+                /* บังคับให้เป็น 2 คอลัมน์เสมอในมือถือ */
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            .home-card {
+                padding: 20px 10px;
+                border-radius: 12px;
+            }
+            .card-icon {
+                font-size: 2rem; /* ปรับขนาดไอคอนลงเล็กน้อย */
+                margin-bottom: 10px;
+            }
+            .card-title {
+                font-size: 0.85rem; /* ปรับขนาดฟอนต์ให้พอดีบรรทัด */
+                line-height: 1.3;
+            }
+        }
     </style>
 </head>
 <body>
@@ -241,28 +273,23 @@
         const homeScreen = document.getElementById('homeScreen');
         const appFrame = document.getElementById('appFrame');
 
-        // 1. ฟังก์ชันสร้างการ์ดหน้า Home อัตโนมัติจากเมนูซ้าย
         function generateHomeGrid() {
             const grid = document.getElementById('homeGrid');
             const items = document.querySelectorAll('.menu-list .menu-item');
             
             items.forEach((item, index) => {
-                // ข้ามปุ่ม "กลับหน้าแรก"
                 if(item.innerText.includes('กลับหน้าแรก')) return;
 
-                // กำหนด ID ให้เมนูเพื่อให้กดการ์ดแล้วไปอัปเดตเมนูได้
                 const itemId = 'menu-item-' + index;
                 item.id = itemId;
                 
                 const iconHtml = item.querySelector('i').outerHTML;
                 const title = item.innerText.trim();
                 
-                // ดึง Path ของไฟล์
                 const onclickAttr = item.getAttribute('onclick');
                 const pathMatch = onclickAttr.match(/'([^']+)'/);
                 const path = pathMatch ? pathMatch[1] : '';
 
-                // สร้างการ์ด
                 const card = document.createElement('div');
                 card.className = 'home-card';
                 card.onclick = () => {
@@ -277,26 +304,20 @@
             });
         }
 
-        // 2. ฟังก์ชันโหลดโปรแกรม และซ่อนหน้า Home
         function loadTool(element, path) {
-            // โหลด iframe
             appFrame.src = path;
             
-            // อัปเดตแถบสีน้ำเงินในเมนูด้านซ้าย
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
             
-            // ปิดเมนูมือถือ (ถ้าเปิดอยู่)
             if (window.innerWidth < 1024) toggleNav(false);
 
-            // ซ่อนหน้า Home Screen ด้วยเอฟเฟกต์เฟด
             homeScreen.classList.add('hidden');
         }
 
-        // 3. ฟังก์ชันกลับหน้า Home
         function goHome() {
             homeScreen.classList.remove('hidden');
-            appFrame.src = ''; // เคลียร์หน้าจอเดิม
+            appFrame.src = ''; 
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
             if (window.innerWidth < 1024) toggleNav(false);
         }
@@ -306,17 +327,15 @@
             overlay.classList.toggle('active', isOpen);
         }
 
-        // ฟังก์ชันค้นหาใน Sidebar
         function filterMenu(query) {
             const filter = query.toUpperCase();
             document.querySelectorAll("#menuList .menu-item").forEach(item => {
-                if(item.innerText.includes('กลับหน้าแรก')) return; // ไม่ซ่อนปุ่มโฮม
+                if(item.innerText.includes('กลับหน้าแรก')) return; 
                 const text = item.innerText.toUpperCase();
                 item.style.display = text.includes(filter) ? "flex" : "none";
             });
         }
 
-        // ฟังก์ชันค้นหาในหน้า Home Screen
         function filterHome(query) {
             const filter = query.toUpperCase();
             document.querySelectorAll(".home-card").forEach(card => {
@@ -325,12 +344,10 @@
             });
         }
 
-        // รันฟังก์ชันสร้างการ์ดเมื่อเปิดเว็บ
         window.addEventListener('load', () => {
             generateHomeGrid();
         });
 
-        // SW Register (สำหรับ Offline)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').catch(console.error);
