@@ -44,10 +44,10 @@
         }
 
         .home-header { text-align: center; margin-bottom: 40px; color: white; animation: fadeInDown 0.6s ease; }
-        /* ลดขนาดตัวอักษรลง 20% (จาก 2.5rem เป็น 2rem) */
         .home-header h1 { font-size: 2rem; font-weight: 600; color: var(--accent); margin-bottom: 10px; font-family: 'Prompt', sans-serif;}
         .home-header p { color: var(--text-muted); font-size: 1.1rem; }
 
+        /* ซ่อน CSS Search ไว้เผื่อใช้ในอนาคต */
         .home-search {
             width: 100%; max-width: 600px; margin: 0 auto 40px;
             position: relative; animation: fadeInUp 0.6s ease;
@@ -60,10 +60,8 @@
         }
         .home-search input:focus { background: rgba(255,255,255,0.1); border-color: var(--accent); box-shadow: 0 0 20px rgba(56, 189, 248, 0.2); }
 
-        /* จัดการ Layout ของหน้า Home Menu (Grid) */
         .home-grid {
             display: grid; 
-            /* กำหนดให้เป็น 2 คอลัมน์เป็นค่าเริ่มต้น (สำหรับมือถือ) */
             grid-template-columns: repeat(2, 1fr); 
             gap: 15px; 
             width: 100%; 
@@ -71,7 +69,6 @@
             animation: fadeInUp 0.8s ease;
         }
 
-        /* เมื่ออยู่บนหน้าจอคอมพิวเตอร์ (กว้างกว่า 1024px) ปรับให้เป็น 5 คอลัมน์ */
         @media (min-width: 1024px) {
             .home-grid {
                 grid-template-columns: repeat(5, 1fr);
@@ -79,14 +76,12 @@
             }
         }
 
-        /* การปรับแต่ง Card */
         .home-card {
             background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 16px; padding: 20px 15px; text-align: center; cursor: pointer;
             transition: all 0.3s ease; backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         
-        /* บนคอมฯ ให้ padding มากขึ้นนิดนึงเพื่อให้ card ดูสมส่วน */
         @media (min-width: 1024px) {
             .home-card { padding: 30px 20px; }
         }
@@ -174,11 +169,6 @@
             <p>รวมเครื่องมือคำนวณสำหรับวิศวกรและช่างเทคนิค</p>
         </div>
 
-        <div class="home-search">
-            <i class="fas fa-search"></i>
-            <input type="text" placeholder="ค้นหาโปรแกรมที่ต้องการ..." onkeyup="filterHome(this.value)">
-        </div>
-
         <div class="home-grid" id="homeGrid"></div>
     </div>
 
@@ -197,14 +187,7 @@
             <i class="fas fa-times lg:hidden cursor-pointer text-slate-500" onclick="toggleNav(false)"></i>
         </div>
         
-        <div class="search-box">
-            <div class="search-wrapper">
-                <i class="fas fa-search"></i>
-                <input type="text" class="search-input" placeholder="ค้นหาเครื่องมือ..." onkeyup="filterMenu(this.value)">
-            </div>
-        </div>
-
-        <div class="menu-list" id="menuList">
+        <div class="menu-list" id="menuList" style="padding-top: 20px;">
             <div class="menu-item" onclick="goHome()" style="color: white; border-bottom: 1px solid #334155; margin-bottom: 15px; padding-bottom: 15px;">
                 <i class="fas fa-home"></i> กลับหน้าแรก (Home)
             </div>
@@ -332,17 +315,16 @@
             overlay.classList.toggle('active', isOpen);
         }
 
-        // ฟังก์ชันค้นหาใน Sidebar
+        /* ซ่อนฟังก์ชันค้นหาไว้ก่อนเผื่อใช้ในอนาคต
         function filterMenu(query) {
             const filter = query.toUpperCase();
             document.querySelectorAll("#menuList .menu-item").forEach(item => {
-                if(item.innerText.includes('กลับหน้าแรก')) return; // ไม่ซ่อนปุ่มโฮม
+                if(item.innerText.includes('กลับหน้าแรก')) return;
                 const text = item.innerText.toUpperCase();
                 item.style.display = text.includes(filter) ? "flex" : "none";
             });
         }
 
-        // ฟังก์ชันค้นหาในหน้า Home Screen
         function filterHome(query) {
             const filter = query.toUpperCase();
             document.querySelectorAll(".home-card").forEach(card => {
@@ -350,6 +332,7 @@
                 card.style.display = text.includes(filter) ? "flex" : "none";
             });
         }
+        */
 
         // รันฟังก์ชันสร้างการ์ดเมื่อเปิดเว็บ
         window.addEventListener('load', () => {
