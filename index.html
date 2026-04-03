@@ -44,7 +44,8 @@
         }
 
         .home-header { text-align: center; margin-bottom: 40px; color: white; animation: fadeInDown 0.6s ease; }
-        .home-header h1 { font-size: 2.5rem; font-weight: 600; color: var(--accent); margin-bottom: 10px; font-family: 'Prompt', sans-serif;}
+        /* ลดขนาดตัวอักษรลง 20% (จาก 2.5rem เป็น 2rem) */
+        .home-header h1 { font-size: 2rem; font-weight: 600; color: var(--accent); margin-bottom: 10px; font-family: 'Prompt', sans-serif;}
         .home-header p { color: var(--text-muted); font-size: 1.1rem; }
 
         .home-search {
@@ -59,26 +60,51 @@
         }
         .home-search input:focus { background: rgba(255,255,255,0.1); border-color: var(--accent); box-shadow: 0 0 20px rgba(56, 189, 248, 0.2); }
 
+        /* จัดการ Layout ของหน้า Home Menu (Grid) */
         .home-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 20px; width: 100%; max-width: 1100px; animation: fadeInUp 0.8s ease;
+            display: grid; 
+            /* กำหนดให้เป็น 2 คอลัมน์เป็นค่าเริ่มต้น (สำหรับมือถือ) */
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 15px; 
+            width: 100%; 
+            max-width: 1200px; 
+            animation: fadeInUp 0.8s ease;
         }
 
+        /* เมื่ออยู่บนหน้าจอคอมพิวเตอร์ (กว้างกว่า 1024px) ปรับให้เป็น 5 คอลัมน์ */
+        @media (min-width: 1024px) {
+            .home-grid {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 20px;
+            }
+        }
+
+        /* การปรับแต่ง Card */
         .home-card {
             background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 16px; padding: 30px 20px; text-align: center; cursor: pointer;
+            border-radius: 16px; padding: 20px 15px; text-align: center; cursor: pointer;
             transition: all 0.3s ease; backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
+        
+        /* บนคอมฯ ให้ padding มากขึ้นนิดนึงเพื่อให้ card ดูสมส่วน */
+        @media (min-width: 1024px) {
+            .home-card { padding: 30px 20px; }
+        }
+
         .home-card:hover {
             background: rgba(56, 189, 248, 0.08); border-color: rgba(56, 189, 248, 0.3);
             transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
-        .card-icon { font-size: 2.8rem; color: var(--accent); margin-bottom: 15px; }
-        .card-title { color: white; font-weight: 500; font-size: 1.1rem; font-family: 'Prompt', sans-serif;}
+        .card-icon { font-size: 2.2rem; color: var(--accent); margin-bottom: 12px; }
+        .card-title { color: white; font-weight: 500; font-size: 0.95rem; font-family: 'Prompt', sans-serif;}
+        
+        @media (min-width: 1024px) {
+            .card-icon { font-size: 2.8rem; margin-bottom: 15px; }
+            .card-title { font-size: 1.1rem; }
+        }
 
         @keyframes fadeInDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
 
         /* =========================================
            APP LAYOUT (SIDEBAR & IFRAME)
@@ -138,38 +164,6 @@
             opacity: 0; visibility: hidden; transition: 0.3s; backdrop-filter: blur(4px);
         }
         .overlay.active { opacity: 1; visibility: visible; }
-
-        /* =========================================
-           MOBILE RESPONSIVE TWEAKS (2 Columns on Mobile)
-           ========================================= */
-        @media (max-width: 600px) {
-            .home-screen {
-                padding: 40px 15px; 
-            }
-            .home-header h1 {
-                font-size: 1.8rem;
-            }
-            .home-header p {
-                font-size: 0.95rem;
-            }
-            .home-grid {
-                /* บังคับให้เป็น 2 คอลัมน์เสมอในมือถือ */
-                grid-template-columns: repeat(2, 1fr);
-                gap: 12px;
-            }
-            .home-card {
-                padding: 20px 10px;
-                border-radius: 12px;
-            }
-            .card-icon {
-                font-size: 2rem; /* ปรับขนาดไอคอนลงเล็กน้อย */
-                margin-bottom: 10px;
-            }
-            .card-title {
-                font-size: 0.85rem; /* ปรับขนาดฟอนต์ให้พอดีบรรทัด */
-                line-height: 1.3;
-            }
-        }
     </style>
 </head>
 <body>
@@ -273,23 +267,28 @@
         const homeScreen = document.getElementById('homeScreen');
         const appFrame = document.getElementById('appFrame');
 
+        // 1. ฟังก์ชันสร้างการ์ดหน้า Home อัตโนมัติจากเมนูซ้าย
         function generateHomeGrid() {
             const grid = document.getElementById('homeGrid');
             const items = document.querySelectorAll('.menu-list .menu-item');
             
             items.forEach((item, index) => {
+                // ข้ามปุ่ม "กลับหน้าแรก"
                 if(item.innerText.includes('กลับหน้าแรก')) return;
 
+                // กำหนด ID ให้เมนูเพื่อให้กดการ์ดแล้วไปอัปเดตเมนูได้
                 const itemId = 'menu-item-' + index;
                 item.id = itemId;
                 
                 const iconHtml = item.querySelector('i').outerHTML;
                 const title = item.innerText.trim();
                 
+                // ดึง Path ของไฟล์
                 const onclickAttr = item.getAttribute('onclick');
                 const pathMatch = onclickAttr.match(/'([^']+)'/);
                 const path = pathMatch ? pathMatch[1] : '';
 
+                // สร้างการ์ด
                 const card = document.createElement('div');
                 card.className = 'home-card';
                 card.onclick = () => {
@@ -304,20 +303,26 @@
             });
         }
 
+        // 2. ฟังก์ชันโหลดโปรแกรม และซ่อนหน้า Home
         function loadTool(element, path) {
+            // โหลด iframe
             appFrame.src = path;
             
+            // อัปเดตแถบสีน้ำเงินในเมนูด้านซ้าย
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
             
+            // ปิดเมนูมือถือ (ถ้าเปิดอยู่)
             if (window.innerWidth < 1024) toggleNav(false);
 
+            // ซ่อนหน้า Home Screen ด้วยเอฟเฟกต์เฟด
             homeScreen.classList.add('hidden');
         }
 
+        // 3. ฟังก์ชันกลับหน้า Home
         function goHome() {
             homeScreen.classList.remove('hidden');
-            appFrame.src = ''; 
+            appFrame.src = ''; // เคลียร์หน้าจอเดิม
             document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
             if (window.innerWidth < 1024) toggleNav(false);
         }
@@ -327,15 +332,17 @@
             overlay.classList.toggle('active', isOpen);
         }
 
+        // ฟังก์ชันค้นหาใน Sidebar
         function filterMenu(query) {
             const filter = query.toUpperCase();
             document.querySelectorAll("#menuList .menu-item").forEach(item => {
-                if(item.innerText.includes('กลับหน้าแรก')) return; 
+                if(item.innerText.includes('กลับหน้าแรก')) return; // ไม่ซ่อนปุ่มโฮม
                 const text = item.innerText.toUpperCase();
                 item.style.display = text.includes(filter) ? "flex" : "none";
             });
         }
 
+        // ฟังก์ชันค้นหาในหน้า Home Screen
         function filterHome(query) {
             const filter = query.toUpperCase();
             document.querySelectorAll(".home-card").forEach(card => {
@@ -344,10 +351,12 @@
             });
         }
 
+        // รันฟังก์ชันสร้างการ์ดเมื่อเปิดเว็บ
         window.addEventListener('load', () => {
             generateHomeGrid();
         });
 
+        // SW Register (สำหรับ Offline)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js').catch(console.error);
