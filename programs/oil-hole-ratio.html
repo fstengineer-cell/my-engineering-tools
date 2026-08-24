@@ -49,9 +49,38 @@
             padding: 15px;
             text-align: center;
             border-radius: 16px 16px 0 0;
+            position: relative;
         }
 
         .header h1 { margin: 0; font-size: 1.25rem; font-weight: 400; }
+
+        .reset-btn {
+            position: absolute;
+            top: 50%;
+            right: 15px;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            color: white;
+            font-family: 'Kanit', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 400;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .reset-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .reset-btn:active {
+            transform: translateY(-50%) scale(0.95);
+        }
 
         .content { padding: 15px; display: flex; flex-direction: column; gap: 15px; }
 
@@ -146,6 +175,12 @@
             box-shadow: 0 4px 10px rgba(37, 99, 235, 0.1);
         }
 
+        /* --- Stale state: shown when an input changed but not all 3 are filled,
+             so the result box below is no longer trustworthy --- */
+        .floating-input.is-stale-trigger {
+            border-color: #f59e0b;
+        }
+
         .mini-guide {
             font-size: 0.75rem; color: #d97706; margin-top: 4px; cursor: pointer;
             text-decoration: underline; display: none; background: #fffbeb;
@@ -160,7 +195,31 @@
             padding: 20px;
             text-align: center;
             border: 1px solid var(--border-color);
+            position: relative;
+            transition: opacity 0.2s ease;
         }
+
+        .result-section.is-stale {
+            opacity: 0.4;
+        }
+
+        .stale-banner {
+            display: none;
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #f59e0b;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 999px;
+            white-space: nowrap;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .stale-banner.show { display: block; }
 
         .comparison-box {
             display: flex; align-items: center; justify-content: center;
@@ -180,6 +239,9 @@
 <div class="container">
     <div class="header">
         <h1>คำนวณอัตราส่วนรูระบายน้ำมัน</h1>
+        <button type="button" class="reset-btn" onclick="resetAll()" title="ล้างค่าทั้งหมด">
+            ↺ ล้างค่า
+        </button>
     </div>
 
     <div class="content">
@@ -210,7 +272,8 @@
             </div>
         </div>
 
-        <div class="result-section">
+        <div id="resultSection" class="result-section">
+            <div id="staleBanner" class="stale-banner">รอข้อมูลครบ - ค่าด้านล่างยังเป็นค่าเก่า</div>
             <div class="comparison-box">
                 <div>
                     <div style="font-size:0.8rem; color:#be185d; margin-bottom:4px; font-weight:600;">พื้นที่รูระบายรวม (Output)</div>
@@ -263,9 +326,13 @@
     }
 
     function calculate() {
-        const inputDia = parseFloat(document.getElementById('inputDia').value);
-        const outputDia = parseFloat(document.getElementById('outputDia').value);
-        const outputCount = parseFloat(document.getElementById('outputCount').value);
+        const inputDiaEl = document.getElementById('inputDia');
+        const outputDiaEl = document.getElementById('outputDia');
+        const outputCountEl = document.getElementById('outputCount');
+
+        const inputDia = parseFloat(inputDiaEl.value);
+        const outputDia = parseFloat(outputDiaEl.value);
+        const outputCount = parseFloat(outputCountEl.value);
 
         const pi = Math.PI;
 
@@ -314,15 +381,41 @@
 
         // -------------------------------------------------------------
         // 3. Final Evaluation Area (Needs all 3 inputs to evaluate)
+        //    ถ้ายังกรอกไม่ครบ 3 ช่อง -> เคลียร์ผลลัพธ์เก่าทิ้งทันที
+        //    และแสดง badge "ค่าเก่า/รอข้อมูล" เพื่อไม่ให้สับสนว่าเป็นค่าใหม่
         // -------------------------------------------------------------
-        if (isNaN(inputDia) || isNaN(outputDia) || isNaN(outputCount)) {
+        const resultSection = document.getElementById('resultSection');
+        const staleBanner = document.getElementById('staleBanner');
+
+        const hasAnyValue = (!isNaN(inputDia) && inputDia > 0) ||
+                             (!isNaN(outputDia) && outputDia > 0) ||
+                             (!isNaN(outputCount) && outputCount > 0);
+
+        if (isNaN(inputDia) || inputDia <= 0 ||
+            isNaN(outputDia) || outputDia <= 0 ||
+            isNaN(outputCount) || outputCount <= 0) {
+
             resetDisplay();
+
+            // ถ้ามีการกรอกบางช่องแล้ว (แต่ยังไม่ครบ) ให้ mark ว่าผลลัพธ์ยังไม่สมบูรณ์
+            if (hasAnyValue) {
+                resultSection.classList.add('is-stale');
+                staleBanner.classList.add('show');
+            } else {
+                resultSection.classList.remove('is-stale');
+                staleBanner.classList.remove('show');
+            }
+
             // Show only Input Area if Input Dia is provided
-            if(!isNaN(inputDia) && inputDia > 0) {
+            if (!isNaN(inputDia) && inputDia > 0) {
                  document.getElementById('dispInput').innerText = (pi * Math.pow((inputDia / 2), 2)).toFixed(2);
             }
             return;
         }
+
+        // ข้อมูลครบทั้ง 3 ช่อง -> คำนวณค่าใหม่ และล้าง stale state
+        resultSection.classList.remove('is-stale');
+        staleBanner.classList.remove('show');
 
         const areaInput = pi * Math.pow((inputDia / 2), 2);
         const areaTotalOutput = (pi * Math.pow((outputDia / 2), 2)) * outputCount;
@@ -369,7 +462,24 @@
         document.getElementById('statusTextBottom').innerText = "รอข้อมูล...";
         document.getElementById('statusTextBottom').style.color = "#94a3b8";
     }
+
+    // ล้างค่าทั้งหมด: input ทุกช่อง, guide ที่แนะนำ, ผลลัพธ์ และ stale state
+    function resetAll() {
+        const inputs = document.querySelectorAll('.floating-input');
+        inputs.forEach(input => {
+            input.value = '';
+            input.classList.remove('has-value');
+        });
+
+        document.getElementById('maxHoleGuide').style.display = 'none';
+        document.getElementById('maxDiaGuide').style.display = 'none';
+        document.getElementById('dispInput').innerText = '0.00';
+
+        document.getElementById('resultSection').classList.remove('is-stale');
+        document.getElementById('staleBanner').classList.remove('show');
+
+        resetDisplay();
+    }
 </script>
 </body>
 </html>
-
